@@ -11,6 +11,8 @@ using namespace std;
 
 #include "stringset.h"
 
+#define BUFSIZE 4096
+
 
 int main (int argc, char **argv) {
 	int c;
@@ -18,7 +20,8 @@ int main (int argc, char **argv) {
 	bool yflag = false;
 	string dflag;
 	string atflag;
-	FILE* ocfile;
+	FILE* pipe;
+	string ocfname;
 
 	while((c = getopt(argc-1, argv, "lyd:@:")) != -1)
 		switch(c){
@@ -36,16 +39,28 @@ int main (int argc, char **argv) {
 				break;
 			default:
 				fprintf(stderr, "Unknown option `%s'\n", optarg);
-			}
-		for(int i=0; i<argc; i++){
-			if (strstr(argv[i], "oc") != NULL)
-				printf("File is %s\n", argv[i]);
-				ocfile = fopen(argv[i], "r");
 		}
-		if (ocfile == NULL){
-			fprintf(stderr, "File not found\n");
-			exit(1);
+	for(int i=0; i<argc; i++){
+		if (strstr(argv[i], "oc") != NULL){
+			ocfname = string(argv[i]);
 		}
+	}
+	if (fopen(ocfname.c_str(), "r") == NULL){
+		fprintf(stderr, "File not found\n");
+		exit(1);
+	}
+	
+	//run c preprocessor
+	string cmd = "cpp ";
+	cmd += ocfname;
+
+	//read in code and run preprocessor
+	pipe = popen(cmd.c_str(), "r");
+	//read preprocessed data into hashtable
+	char input_buffer[BUFSIZE];
+	while(fgets(input_buffer, BUFSIZE, pipe) != NULL){
+		printf("%s\n", input_buffer)	;
+	}
 
 
 //   for (int i = 1; i < argc; ++i) {
@@ -57,4 +72,6 @@ int main (int argc, char **argv) {
    return EXIT_SUCCESS;
 
 }
+
+
 

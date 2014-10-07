@@ -1,0 +1,9 @@
+#define bork 10
+string1 string2		string3
+string4
+	string5
+#ifdef def_me
+	this_string_should_not_exist
+#define def_me
+#endif
+
