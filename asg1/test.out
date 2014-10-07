@@ -1,0 +1,65 @@
+==2292== Memcheck, a memory error detector
+==2292== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==2292== Using Valgrind-3.9.0 and LibVEX; rerun with -h for copyright info
+==2292== Command: teststring HEADER.html Listing.pdf Listing.ps Makefile RCS main.cpp main.o stringset.cpp stringset.h stringset.o test.out teststring HEADER.html Listing.pdf Listing.ps Makefile RCS main.cpp main.o stringset.cpp stringset.h stringset.o test.out teststring HEADER.html Listing.pdf Listing.ps Makefile RCS main.cpp main.o stringset.cpp stringset.h stringset.o test.out teststring
+==2292== 
+intern ("HEADER.html") returned 0x4c2d0f8->"HEADER.html"
+intern ("Listing.pdf") returned 0x4c2d1c8->"Listing.pdf"
+intern ("Listing.ps") returned 0x4c2d298->"Listing.ps"
+intern ("Makefile") returned 0x4c2d368->"Makefile"
+intern ("RCS") returned 0x4c2d438->"RCS"
+intern ("main.cpp") returned 0x4c2d4f8->"main.cpp"
+intern ("main.o") returned 0x4c2d5c8->"main.o"
+intern ("stringset.cpp") returned 0x4c2d688->"stringset.cpp"
+intern ("stringset.h") returned 0x4c2d758->"stringset.h"
+intern ("stringset.o") returned 0x4c2d828->"stringset.o"
+intern ("test.out") returned 0x4c2d8f8->"test.out"
+intern ("teststring") returned 0x4c2dac8->"teststring"
+intern ("HEADER.html") returned 0x4c2d0f8->"HEADER.html"
+intern ("Listing.pdf") returned 0x4c2d1c8->"Listing.pdf"
+intern ("Listing.ps") returned 0x4c2d298->"Listing.ps"
+intern ("Makefile") returned 0x4c2d368->"Makefile"
+intern ("RCS") returned 0x4c2d438->"RCS"
+intern ("main.cpp") returned 0x4c2d4f8->"main.cpp"
+intern ("main.o") returned 0x4c2d5c8->"main.o"
+intern ("stringset.cpp") returned 0x4c2d688->"stringset.cpp"
+intern ("stringset.h") returned 0x4c2d758->"stringset.h"
+intern ("stringset.o") returned 0x4c2d828->"stringset.o"
+intern ("test.out") returned 0x4c2d8f8->"test.out"
+intern ("teststring") returned 0x4c2dac8->"teststring"
+intern ("HEADER.html") returned 0x4c2d0f8->"HEADER.html"
+intern ("Listing.pdf") returned 0x4c2d1c8->"Listing.pdf"
+intern ("Listing.ps") returned 0x4c2d298->"Listing.ps"
+intern ("Makefile") returned 0x4c2d368->"Makefile"
+intern ("RCS") returned 0x4c2d438->"RCS"
+intern ("main.cpp") returned 0x4c2d4f8->"main.cpp"
+intern ("main.o") returned 0x4c2d5c8->"main.o"
+intern ("stringset.cpp") returned 0x4c2d688->"stringset.cpp"
+intern ("stringset.h") returned 0x4c2d758->"stringset.h"
+intern ("stringset.o") returned 0x4c2d828->"stringset.o"
+intern ("test.out") returned 0x4c2d8f8->"test.out"
+intern ("teststring") returned 0x4c2dac8->"teststring"
+stringset[   0]:   14383043818818809721 0x4c2db28->"teststring"
+                   13646535705723827550 0x4c2d158->"HEADER.html"
+stringset[   1]:    2099682443743551108 0x4c2d618->"main.o"
+stringset[   4]:     994128771139992428 0x4c2d488->"RCS"
+stringset[   6]:   12311697016174216101 0x4c2d6e8->"stringset.cpp"
+stringset[  10]:    8902767590177878864 0x4c2d3c8->"Makefile"
+stringset[  11]:   12900681736301144686 0x4c2d888->"stringset.o"
+stringset[  12]:   11225442421023521097 0x4c2d958->"test.out"
+stringset[  15]:    6788790452799346656 0x4c2d228->"Listing.pdf"
+stringset[  16]:   17041606903804112922 0x4c2d558->"main.cpp"
+stringset[  17]:    1553654622159544091 0x4c2d2f8->"Listing.ps"
+stringset[  20]:    1356443961750385397 0x4c2d7b8->"stringset.h"
+load_factor = 0.522
+bucket_count = 23
+max_bucket_size = 2
+==2292== 
+==2292== HEAP SUMMARY:
+==2292==     in use at exit: 0 bytes in 0 blocks
+==2292==   total heap usage: 50 allocs, 50 frees, 1,790 bytes allocated
+==2292== 
+==2292== All heap blocks were freed -- no leaks are possible
+==2292== 
+==2292== For counts of detected and suppressed errors, rerun with: -v
+==2292== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 6 from 6)
