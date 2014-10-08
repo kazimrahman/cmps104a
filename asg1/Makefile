@@ -16,7 +16,9 @@ teststring : main.o stringset.o
 	${GPP} -c $<
 
 ci :
-	cid + Makefile stringset.h stringset.cpp main.cpp
+	git add *.h *.cpp Makefile && \
+	git commit -m 'automated commit' && \
+	git push https://github.com/smorad/cmps104a master
 
 spotless : clean
 	- rm teststring Listing.ps Listing.pdf \
