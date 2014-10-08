@@ -13,6 +13,46 @@ using namespace std;
 
 #define BUFSIZE 4096
 
+/*Returns a pipe to a preprocessor which has been fed ocfname*/
+FILE* preprocess(string ocfname){
+	//run c preprocessor
+	string cmd = "cpp ";
+	cmd += ocfname;
+
+	//read in code and run preprocessor
+	return(popen(cmd.c_str(), "r"));
+	
+}
+
+void fill_string_table(FILE* pipe){
+	//read preprocessed data into hashtable
+	char input_buffer[BUFSIZE];
+	char* saveptr;
+	int i = 0;
+	while(fgets(input_buffer, BUFSIZE, pipe) != NULL){
+		//throw away first three lines of preprocessor, it's not part of file
+		if (i++ < 3)
+			continue;
+		char* token = strtok_r(input_buffer, " \t\n", &saveptr);
+		if (token != NULL){
+			intern_stringset(strdup(token));
+			printf("%s\n", token);	
+		}
+		while(1){
+			token = strtok_r(NULL, " \t\n", &saveptr);
+			if (token == NULL)
+				break;
+			else{
+				printf("%s\n", token);	
+				intern_stringset(strdup(token));
+			}
+			
+		}
+	}
+	FILE* f = fopen("output", "a+");
+	dump_stringset(f);
+
+}
 
 int main (int argc, char **argv) {
 	int c;
@@ -20,7 +60,6 @@ int main (int argc, char **argv) {
 	bool yflag = false;
 	string dflag;
 	string atflag;
-	FILE* pipe;
 	string ocfname;
 
 	while((c = getopt(argc-1, argv, "lyd:@:")) != -1)
@@ -49,19 +88,8 @@ int main (int argc, char **argv) {
 		fprintf(stderr, "File not found\n");
 		exit(1);
 	}
-	
-	//run c preprocessor
-	string cmd = "cpp ";
-	cmd += ocfname;
-
-	//read in code and run preprocessor
-	pipe = popen(cmd.c_str(), "r");
-	//read preprocessed data into hashtable
-	char input_buffer[BUFSIZE];
-	while(fgets(input_buffer, BUFSIZE, pipe) != NULL){
-		printf("%s\n", input_buffer)	;
-	}
-
+	FILE* preproc_pipe = preprocess(ocfname);	
+	fill_string_table(preproc_pipe);
 
 //   for (int i = 1; i < argc; ++i) {
 //      const string* str = intern_stringset (argv[i]);
@@ -72,6 +100,8 @@ int main (int argc, char **argv) {
    return EXIT_SUCCESS;
 
 }
+
+
 
 
 
