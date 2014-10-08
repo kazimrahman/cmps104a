@@ -49,9 +49,6 @@ void fill_string_table(FILE* pipe){
 			
 		}
 	}
-	FILE* f = fopen("output", "a+");
-	dump_stringset(f);
-
 }
 
 int main (int argc, char **argv) {
@@ -84,19 +81,15 @@ int main (int argc, char **argv) {
 			ocfname = string(argv[i]);
 		}
 	}
-	if (fopen(ocfname.c_str(), "r") == NULL){
+	FILE* tmp = fopen(ocfname.c_str(), "r");
+	if (tmp == NULL){
 		fprintf(stderr, "File not found\n");
 		exit(1);
 	}
+	fclose(tmp);
 	FILE* preproc_pipe = preprocess(ocfname);	
 	fill_string_table(preproc_pipe);
-
-//   for (int i = 1; i < argc; ++i) {
-//      const string* str = intern_stringset (argv[i]);
-//      printf ("intern (\"%s\") returned %p->\"%s\"\n",
-//              argv[i], str->c_str(), str->c_str());
-//   }
-//   dump_stringset (stdout);
+	fclose(preproc_pipe);
    return EXIT_SUCCESS;
 
 }

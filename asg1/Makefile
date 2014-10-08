@@ -17,7 +17,7 @@ teststring : main.o stringset.o
 
 ci :
 	git add *.h *.cpp Makefile && \
-	git commit -m 'automated commit' && \
+	git commit && \
 	git push https://github.com/smorad/cmps104a master
 
 spotless : clean
