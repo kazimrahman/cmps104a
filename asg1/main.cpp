@@ -59,7 +59,6 @@ int main (int argc, char **argv) {
 	bool yflag = false;
 	string dflag;
 	string atflag;
-	vector<string> ocfnames;
 
 	while((c = getopt(argc-1, argv, "lyD:@:")) != -1)
 		switch(c){
@@ -81,6 +80,7 @@ int main (int argc, char **argv) {
 	char* ocfname = argv[argc-1];
 	if (!strstr(ocfname, ".oc")){
 		fprintf(stderr, "File must be an .oc file\n");
+		exit(1);
 	}
 	FILE* tmp = fopen(ocfname, "r");
 	if (tmp == NULL){
@@ -88,6 +88,8 @@ int main (int argc, char **argv) {
 		exit(1);
 	}
 	fclose(tmp);
+
+	//File parsing
 	FILE* preproc_pipe = preprocess(ocfname, dflag);	
 	fill_string_table(preproc_pipe);
 	fclose(preproc_pipe);
@@ -96,7 +98,8 @@ int main (int argc, char **argv) {
 	auto dot_index = strrchr(out_fname, '.');
 	*dot_index = '\0';
 	strcat(out_fname, ".str");
-	printf("fname: %s", out_fname);
+
+	//Dump to file
 	FILE* outfile = fopen(out_fname, "w");
 	dump_stringset(outfile);
 	fclose(outfile);
