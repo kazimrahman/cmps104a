@@ -1,0 +1,15 @@
+stringset[   6]:    5088527007079275554 0x155b2e8->""test.oc""
+stringset[  11]:    3934116607259143573 0x155b448->"string1"
+stringset[  13]:   15253808369251357366 0x155b818->"string8"
+stringset[  14]:   10159970873491820195 0x155b2a8->"1"
+                    9981811904755954463 0x155b678->"string6"
+stringset[  16]:   13985887974751908322 0x155b3a8->""<command-line>""
+                    2483941336644571869 0x155b608->"string5"
+stringset[  18]:   11000535747504148765 0x155b598->"string4"
+stringset[  19]:    8954937735645966812 0x155b6e8->"string7"
+                   15911861261584493004 0x155b528->"string3"
+stringset[  21]:    4038071199236763861 0x155b268->"#"
+stringset[  22]:    5981711598734670988 0x155b4b8->"string2"
+load_factor = 0.522
+bucket_count = 23
+max_bucket_size = 2

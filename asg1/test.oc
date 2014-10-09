@@ -1,0 +1,8 @@
+string1
+string2
+string3
+#ifdef not_def
+invisible_string
+#endif
+string4 string5	string6	string7
+	string8

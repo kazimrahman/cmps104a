@@ -8,16 +8,20 @@ using namespace std;
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <libgen.h>
+#include <vector>
 
 #include "stringset.h"
 
 #define BUFSIZE 4096
 
 /*Returns a pipe to a preprocessor which has been fed ocfname*/
-FILE* preprocess(string ocfname){
+FILE* preprocess(string ocfname, string options){
 	//run c preprocessor
 	string cmd = "cpp ";
-	cmd += ocfname;
+	cmd += ocfname + " ";
+	if (!options.empty())
+		cmd += "-D" + options;
 
 	//read in code and run preprocessor
 	return(popen(cmd.c_str(), "r"));
@@ -28,22 +32,20 @@ void fill_string_table(FILE* pipe){
 	//read preprocessed data into hashtable
 	char input_buffer[BUFSIZE];
 	char* saveptr;
-	int i = 0;
+//	int i = 0;
 	while(fgets(input_buffer, BUFSIZE, pipe) != NULL){
 		//throw away first three lines of preprocessor, it's not part of file
-		if (i++ < 3)
-			continue;
+//		if (i++ < 3)
+//			continue;
 		char* token = strtok_r(input_buffer, " \t\n", &saveptr);
 		if (token != NULL){
 			intern_stringset(strdup(token));
-			printf("%s\n", token);	
 		}
 		while(1){
 			token = strtok_r(NULL, " \t\n", &saveptr);
 			if (token == NULL)
 				break;
 			else{
-				printf("%s\n", token);	
 				intern_stringset(strdup(token));
 			}
 			
@@ -57,9 +59,9 @@ int main (int argc, char **argv) {
 	bool yflag = false;
 	string dflag;
 	string atflag;
-	string ocfname;
+	vector<string> ocfnames;
 
-	while((c = getopt(argc-1, argv, "lyd:@:")) != -1)
+	while((c = getopt(argc-1, argv, "lyD:@:")) != -1)
 		switch(c){
 			case 'l':
 				lflag = true;
@@ -67,7 +69,7 @@ int main (int argc, char **argv) {
 			case 'y':
 				yflag = true;
 				break;
-			case 'd':
+			case 'D':
 				dflag = optarg;
 				break;
 			case '@':
@@ -76,25 +78,27 @@ int main (int argc, char **argv) {
 			default:
 				fprintf(stderr, "Unknown option `%s'\n", optarg);
 		}
-	for(int i=0; i<argc; i++){
-		if (strstr(argv[i], "oc") != NULL){
-			ocfname = string(argv[i]);
-		}
+	char* ocfname = argv[argc-1];
+	if (!strstr(ocfname, ".oc")){
+		fprintf(stderr, "File must be an .oc file\n");
 	}
-	FILE* tmp = fopen(ocfname.c_str(), "r");
+	FILE* tmp = fopen(ocfname, "r");
 	if (tmp == NULL){
 		fprintf(stderr, "File not found\n");
 		exit(1);
 	}
 	fclose(tmp);
-	FILE* preproc_pipe = preprocess(ocfname);	
+	FILE* preproc_pipe = preprocess(ocfname, dflag);	
 	fill_string_table(preproc_pipe);
 	fclose(preproc_pipe);
+	char out_fname[BUFSIZE];
+	strcpy(out_fname, basename(ocfname));
+	auto dot_index = strrchr(out_fname, '.');
+	*dot_index = '\0';
+	strcat(out_fname, ".str");
+	printf("fname: %s", out_fname);
+	FILE* outfile = fopen(out_fname, "w");
+	dump_stringset(outfile);
+	fclose(outfile);
    return EXIT_SUCCESS;
-
 }
-
-
-
-
-

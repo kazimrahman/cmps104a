@@ -7,7 +7,7 @@ GRIND = valgrind --leak-check=full --show-reachable=yes
 all : teststring
 
 test : teststring
-	teststring borkbork.oc
+	teststring test.oc
 
 teststring : main.o stringset.o
 	${GPP} main.o stringset.o -o teststring
