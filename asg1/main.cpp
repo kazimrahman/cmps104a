@@ -32,11 +32,7 @@ void fill_string_table(FILE* pipe){
 	//read preprocessed data into hashtable
 	char input_buffer[BUFSIZE];
 	char* saveptr;
-//	int i = 0;
 	while(fgets(input_buffer, BUFSIZE, pipe) != NULL){
-		//throw away first three lines of preprocessor, it's not part of file
-//		if (i++ < 3)
-//			continue;
 		char* token = strtok_r(input_buffer, " \t\n", &saveptr);
 		if (token != NULL){
 			intern_stringset(strdup(token));
