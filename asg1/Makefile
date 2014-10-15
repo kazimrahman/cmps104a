@@ -21,7 +21,7 @@ ci :
 	git push https://github.com/smorad/cmps104a master
 
 spotless : clean
-	- rm teststring Listing.ps Listing.pdf \
+	- rm teststring Listing.ps Listing.pdf test.str\
 
 clean :
 	-rm stringset.o main.o
