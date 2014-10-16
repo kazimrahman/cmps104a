@@ -28,11 +28,17 @@ FILE* preprocess(string ocfname, string options){
    
 }
 
-void fill_string_table(FILE* pipe){
+void fill_string_table(FILE* pipe, char* filename){
    //read preprocessed data into hashtable
    char input_buffer[BUFSIZE];
    char* saveptr;
+	int linenr = 1;
    while(fgets(input_buffer, BUFSIZE, pipe) != NULL){
+		//if line is preproc is directive, skip it
+		if (sscanf (input_buffer, "# %d \"%[^\"]\"",
+		                              &linenr, filename) == 2){
+			continue;
+		}
       char* token = strtok_r(input_buffer, " \t\n", &saveptr);
       if (token != NULL){
          intern_stringset(strdup(token));
@@ -46,6 +52,7 @@ void fill_string_table(FILE* pipe){
          }
          
       }
+	linenr++;
    }
 }
 
@@ -87,7 +94,7 @@ int main (int argc, char **argv) {
 
    //File parsing
    FILE* preproc_pipe = preprocess(ocfname, dflag);   
-   fill_string_table(preproc_pipe);
+   fill_string_table(preproc_pipe, ocfname);
    fclose(preproc_pipe);
    char out_fname[BUFSIZE];
    strcpy(out_fname, basename(ocfname));
