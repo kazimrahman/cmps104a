@@ -544,8 +544,8 @@ int yy_flex_debug = 1;
 
 static yyconst flex_int16_t yy_rule_linenum[17] =
     {   0,
-       46,   47,   48,   50,   51,   53,   54,   55,   56,   57,
-       58,   59,   60,   61,   63,   66
+       43,   44,   45,   47,   48,   50,   51,   52,   53,   54,
+       55,   56,   57,   58,   60,   63
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -566,11 +566,8 @@ char *yytext;
 #define YY_USER_ACTION  { scanner_useraction (); }
 #define IGNORE(THING)   { }
 
-//remove this shit later
-#define NUMBER 0
-#define IDENT 1
 
-#line 574 "yylex.cc"
+#line 571 "yylex.cc"
 
 #define INITIAL 0
 
@@ -810,10 +807,10 @@ YY_DECL
 	register int yy_act;
     
 /* %% [7.0] user's declarations go here */
-#line 44 "scanner.l"
+#line 41 "scanner.l"
 
 
-#line 817 "yylex.cc"
+#line 814 "yylex.cc"
 
 	if ( !(yy_init) )
 		{
@@ -929,92 +926,92 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 46 "scanner.l"
+#line 43 "scanner.l"
 { scanner_include(); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 47 "scanner.l"
+#line 44 "scanner.l"
 { IGNORE (white space) }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 48 "scanner.l"
+#line 45 "scanner.l"
 { scanner_newline(); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 50 "scanner.l"
+#line 47 "scanner.l"
 { return yylval_token (NUMBER); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 51 "scanner.l"
+#line 48 "scanner.l"
 { return yylval_token (IDENT); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 53 "scanner.l"
+#line 50 "scanner.l"
 { return yylval_token ('='); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 54 "scanner.l"
+#line 51 "scanner.l"
 { return yylval_token ('+'); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 55 "scanner.l"
+#line 52 "scanner.l"
 { return yylval_token ('-'); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 56 "scanner.l"
+#line 53 "scanner.l"
 { return yylval_token ('*'); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 57 "scanner.l"
+#line 54 "scanner.l"
 { return yylval_token ('/'); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 58 "scanner.l"
+#line 55 "scanner.l"
 { return yylval_token ('^'); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 59 "scanner.l"
+#line 56 "scanner.l"
 { return yylval_token ('('); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 60 "scanner.l"
+#line 57 "scanner.l"
 { return yylval_token (')'); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 61 "scanner.l"
+#line 58 "scanner.l"
 { return yylval_token (';'); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 63 "scanner.l"
+#line 60 "scanner.l"
 { scanner_badtoken (yytext);
                   return yylval_token (NUMBER); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 66 "scanner.l"
+#line 63 "scanner.l"
 { scanner_badchar (*yytext); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 68 "scanner.l"
+#line 65 "scanner.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1018 "yylex.cc"
+#line 1015 "yylex.cc"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2106,7 +2103,7 @@ void yyfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 68 "scanner.l"
+#line 65 "scanner.l"
 
 
 

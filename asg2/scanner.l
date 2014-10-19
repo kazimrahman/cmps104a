@@ -7,9 +7,6 @@
 #define YY_USER_ACTION  { scanner_useraction (); }
 #define IGNORE(THING)   { }
 
-//remove this shit later
-#define NUMBER 0
-#define IDENT 1
 
 %}
 
@@ -35,9 +32,9 @@ PREPROC #{NUMBER} {STRING}
 RESERVED void|bool|char|int|string|struct|if|else|while|return|new|false|true|null|ord|chr
 IDENT           ({LETTER}({LETTER}|{DIGIT})*)
 INVALID_IDENT {NUMBER}+{IDENT}
-CHAR '[.^\\n']'
+CHAR (’([^\\’\n]|\\[\\’"0nt])’)
+STRING (\"([^\\"\n]|\\[\\’"0nt])*\")\
 INVALID_CHAR '['\\n]|{CHAR}{2}
-STRING "({CHAR})*
 INVALID_STRING  "{INVALID_CHAR}*"|".*
 
 
