@@ -1,9 +1,9 @@
 %!PS-Adobe-3.0
 %%BoundingBox: 38 24 574 768
 %%Title: Listing.ps
-%%For: Steven Dariush Morad
+%%For: Wesley Mackey
 %%Creator: GNU enscript 1.6.4
-%%CreationDate: Sun Oct 19 10:40:43 2014
+%%CreationDate: Tue Oct 21 19:45:02 2014
 %%Orientation: Portrait
 %%Pages: (atend)
 %%DocumentMedia: Letter 612 792 0 () ()
@@ -408,7 +408,7 @@ gs_languagelevel 1 gt {
     /PageSize [612 792] 
   >> setpagedevice
 } if
-%%BeginResource: procset Enscript-Header-enscript 1.6 4
+%%BeginResource: procset Enscript-Header-enscript-mycolor 1.6 4
 %%IncludeResource: font Times-Bold
 %%IncludeResource: font Times-Roman
 
@@ -420,67 +420,94 @@ gs_languagelevel 1 gt {
 /HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
 
 /HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+/HeaderPageCountF /Helvetica-Bold findfont 18 scalefont def
 
 /do_header {	% print enscript header
   gsave
     d_header_x d_header_y translate
 
-    % light bar
-    0 0 d_header_w d_header_h 2 div Box
-    .95 setgray fill
+    /dhw d_header_w 4 sub def
 
-    % dark gray boxes
-    /dbw d_header_h 2 mul def	% dark box width
-    /dbc .7 def			% dark box color
+    /linecolor {0 0 0 setrgbcolor} bind def  % line color
+    /txcolor   {0 0 0 setrgbcolor} bind def  % text color
+    /fncolor   {0 0 0 setrgbcolor} bind def  % filename line color
 
-    % left dark box.
-    0 0 dbw d_header_h Box
-    dbc setgray fill
+    .5 setlinewidth
 
-    0 setgray 
+    % line across bottom of the header area
+    linecolor
+    0 0 moveto dhw 0 lineto
+
+    % side boxes
+    /sbw d_header_h 2 mul def	% side box width
+
+    % left side box
+    0 0 sbw d_header_h Box
+    linecolor
+    stroke
+
+    % date/time in left box
+    txcolor
     HeaderDateF setfont
-    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    moddatestr dup stringwidth pop sbw exch sub 2 div
     d_header_h 2 div 2 add moveto show
-    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    modtimestr dup stringwidth pop sbw exch sub 2 div
     d_header_h 5 div moveto show
 
-    % right dark box
-    d_header_w dbw sub 0 dbw d_header_h Box
-    dbc setgray fill
+    % right side box
+    dhw sbw sub 0 sbw d_header_h Box
+    linecolor
+    stroke
 
+    % get width of pagecount
+    HeaderPageCountF setfont
+    pagecountstr stringwidth pop
+
+    txcolor
     HeaderPageNumF setfont
-    1 setgray
-    pagenumstr dup
-    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
-    d_header_h .2 mul moveto show
+    pagenumstr stringwidth pop add  % add to width of pagecount
+    sbw exch sub 2 div dhw sbw sub add
+    d_header_h .2 mul moveto
+
+    pagenumstr show
+
+    HeaderPageCountF setfont
+    pagecountstr show
 
     % filename
-    0 setgray 
+    fncolor
     HeaderHDRF setfont
-    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    dhw fname stringwidth pop sub 2 div d_header_h 8 div moveto
     fname show
 
     % user supplied header string.
     user_header_p {
       /h d_header_h 8 div 5 mul def
 
+      % HACK around a bug in enscript 1.6.0:
+      % for some reason this is getting set to "(null)" and
+      %
+      user_header_center_str (\(null\)) eq {
+        /user_header_center_str () def
+      } if
+
       % Implement strict enscript compatibility.
       user_header_center_str () eq user_header_right_str () eq and {
-        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        dhw user_header_left_str stringwidth pop sub 2 div
         h moveto user_header_left_str show
       } {
-        dbw 5 add h moveto user_header_left_str show
+        sbw 5 add h moveto user_header_left_str show
 
-        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        dhw user_header_center_str stringwidth pop sub 2 div
         h moveto user_header_center_str show
 
-	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	dhw sbw sub 5 sub user_header_right_str stringwidth pop
 	sub h moveto user_header_right_str show
       } ifelse
     } if
 
   grestore
-} def
+} bind def
 %%EndResource
 /d_page_w 536 def
 /d_page_h 744 def
@@ -506,10 +533,11 @@ _S
 /ftail (astree.h) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/1) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -565,41 +593,40 @@ do_header
 27.6 459 M (19:) s
 27.6 446 M (20:) s
 56.4 446 M
-(astree* new_astree \(int symbol, int filenr, int linenr, int offse) s
-5 433 M
-(t,) s
-27.6 420 M (21:) s
+(astree* new_astree \(int symbol, int filenr, int linenr,) s
+27.6 433 M (21:) s
+56.4 433 M
+(                    int offset, const char* lexinfo\);) s
+27.6 420 M (22:) s
 56.4 420 M
-(                    const char* lexinfo\);) s
-27.6 407 M (22:) s
-56.4 407 M
 (astree* adopt1 \(astree* root, astree* child\);) s
-27.6 394 M (23:) s
-56.4 394 M
+27.6 407 M (23:) s
+56.4 407 M
 (astree* adopt2 \(astree* root, astree* left, astree* right\);) s
-27.6 381 M (24:) s
-56.4 381 M
+27.6 394 M (24:) s
+56.4 394 M
 (astree* adopt1sym \(astree* root, astree* child, int symbol\);) s
-27.6 368 M (25:) s
-56.4 368 M
+27.6 381 M (25:) s
+56.4 381 M
 (void dump_astree \(FILE* outfile, astree* root\);) s
-27.6 355 M (26:) s
+27.6 368 M (26:) s
+56.4 368 M
+(void yyprint \(FILE* outfile, unsigned short toknum,) s
+27.6 355 M (27:) s
 56.4 355 M
-(void yyprint \(FILE* outfile, unsigned short toknum, astree* yyval) s
-5 342 M
-(uep\);) s
-27.6 329 M (27:) s
-56.4 329 M
+(              astree* yyvaluep\);) s
+27.6 342 M (28:) s
+56.4 342 M
 (void free_ast \(astree* tree\);) s
-27.6 316 M (28:) s
-56.4 316 M
+27.6 329 M (29:) s
+56.4 329 M
 (void free_ast2 \(astree* tree1, astree* tree2\);) s
-27.6 303 M (29:) s
-27.6 290 M (30:) s
+27.6 316 M (30:) s
+27.6 303 M (31:) s
+56.4 303 M
+(RCSH\("$Id: astree.h,v 1.2 2013-10-11 18:52:46-07 - - $"\)) s
+27.6 290 M (32:) s
 56.4 290 M
-(RCSH\("$Id: astree.h,v 1.1 2014-10-19 10:40:43-07 - - $"\)) s
-27.6 277 M (31:) s
-56.4 277 M
 (#endif) s
 _R
 S
@@ -613,10 +640,11 @@ _S
 /ftail (astree.cpp) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -759,10 +787,11 @@ _S
 /ftail (astree.cpp) def
 % User defined strings:
 /pagenumstr (2) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -909,10 +938,11 @@ _S
 /ftail (astree.cpp) def
 % User defined strings:
 /pagenumstr (3) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -969,7 +999,7 @@ do_header
 20.4 472 M (110:) s
 20.4 459 M (111:) s
 56.4 459 M
-(RCSC\("$Id: astree.cpp,v 1.1 2014-10-19 10:40:43-07 - - $"\)) s
+(RCSC\("$Id: astree.cpp,v 1.1 2014-10-03 18:22:05-07 - - $"\)) s
 20.4 446 M (112:) s
 _R
 S
@@ -983,10 +1013,11 @@ _S
 /ftail (auxlib.h) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -1054,60 +1085,56 @@ do_header
 (   //) s
 27.6 394 M (24:) s
 56.4 394 M
-(   // Returns a read-only value previously stored by set_progname) s
-5 381 M
-(.) s
-27.6 368 M (25:) s
-56.4 368 M
+(   // Returns a read-only value previously set by set_progname.) s
+27.6 381 M (25:) s
+56.4 381 M
 (   //) s
-27.6 355 M (26:) s
-27.6 342 M (27:) s
-56.4 342 M
+27.6 368 M (26:) s
+27.6 355 M (27:) s
+56.4 355 M
 (void eprint_status \(const char* command, int status\);) s
-27.6 329 M (28:) s
+27.6 342 M (28:) s
+56.4 342 M
+(   //) s
+27.6 329 M (29:) s
 56.4 329 M
-(   //) s
-27.6 316 M (29:) s
-56.4 316 M
 (   // Print the status returned by wait\(2\) from a subprocess.) s
-27.6 303 M (30:) s
-56.4 303 M
+27.6 316 M (30:) s
+56.4 316 M
 (   //) s
-27.6 290 M (31:) s
-27.6 277 M (32:) s
-56.4 277 M
+27.6 303 M (31:) s
+27.6 290 M (32:) s
+56.4 290 M
 (int get_exitstatus \(void\);) s
-27.6 264 M (33:) s
+27.6 277 M (33:) s
+56.4 277 M
+(   //) s
+27.6 264 M (34:) s
 56.4 264 M
-(   //) s
-27.6 251 M (34:) s
-56.4 251 M
 (   // Returns the exit status.  Default is EXIT_SUCCESS unless) s
-27.6 238 M (35:) s
-56.4 238 M
+27.6 251 M (35:) s
+56.4 251 M
 (   // set_exitstatus \(int\) is called.  The last statement in main) s
-27.6 225 M (36:) s
-56.4 225 M
+27.6 238 M (36:) s
+56.4 238 M
 (   // should be:  ``return get_exitstatus\(\);''.) s
-27.6 212 M (37:) s
-56.4 212 M
+27.6 225 M (37:) s
+56.4 225 M
 (   //) s
-27.6 199 M (38:) s
-27.6 186 M (39:) s
-56.4 186 M
+27.6 212 M (38:) s
+27.6 199 M (39:) s
+56.4 199 M
 (void set_exitstatus \(int\);) s
-27.6 173 M (40:) s
+27.6 186 M (40:) s
+56.4 186 M
+(   //) s
+27.6 173 M (41:) s
 56.4 173 M
-(   //) s
-27.6 160 M (41:) s
+(   // Sets the exit status.  Remebers only the largest value.) s
+27.6 160 M (42:) s
 56.4 160 M
-(   // Sets the exit status.  Remebers only the largest value pass) s
-5 147 M
-(ed in.) s
-27.6 134 M (42:) s
-56.4 134 M
 (   //) s
-27.6 121 M (43:) s
+27.6 147 M (43:) s
 _R
 S
 %%Page: (2) 6
@@ -1120,10 +1147,11 @@ _S
 /ftail (auxlib.h) def
 % User defined strings:
 /pagenumstr (2) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -1180,35 +1208,36 @@ do_header
 (   // Print an error message according to the printf format) s
 27.6 459 M (62:) s
 56.4 459 M
-(   // specified, using eprintf.  Sets the exitstatus to EXIT_FAIL) s
-5 446 M
-(URE.) s
-27.6 433 M (63:) s
+(   // specified, using eprintf.  Sets the exitstatus to) s
+27.6 446 M (63:) s
+56.4 446 M
+(   // EXIT_FAILURE.) s
+27.6 433 M (64:) s
 56.4 433 M
 (   //) s
-27.6 420 M (64:) s
-27.6 407 M (65:) s
+27.6 420 M (65:) s
+27.6 407 M (66:) s
 56.4 407 M
 (void syserrprintf \(const char* object\);) s
-27.6 394 M (66:) s
+27.6 394 M (67:) s
 56.4 394 M
 (   //) s
-27.6 381 M (67:) s
+27.6 381 M (68:) s
 56.4 381 M
 (   // Print a message resulting from a bad system call.  The) s
-27.6 368 M (68:) s
+27.6 368 M (69:) s
 56.4 368 M
 (   // object is the name of the object causing the problem and) s
-27.6 355 M (69:) s
+27.6 355 M (70:) s
 56.4 355 M
 (   // the reason is taken from the external variable errno.) s
-27.6 342 M (70:) s
+27.6 342 M (71:) s
 56.4 342 M
 (   // Sets the exit status to EXIT_FAILURE.) s
-27.6 329 M (71:) s
+27.6 329 M (72:) s
 56.4 329 M
 (   //) s
-27.6 316 M (72:) s
+27.6 316 M (73:) s
 _R
 S
 %%Page: (3) 7
@@ -1221,193 +1250,164 @@ _S
 /ftail (auxlib.h) def
 % User defined strings:
 /pagenumstr (3) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
 %%EndPageSetup
 column_borders
 do_header
-27.6 693 M (73:) s
-27.6 680 M (74:) s
+27.6 693 M (74:) s
+27.6 680 M (75:) s
 56.4 680 M
 (//) s
-27.6 667 M (75:) s
+27.6 667 M (76:) s
 56.4 667 M
 (// Support for stub messages.) s
-27.6 654 M (76:) s
+27.6 654 M (77:) s
 56.4 654 M
 (//) s
-27.6 641 M (77:) s
+27.6 641 M (78:) s
 56.4 641 M
 (#define STUBPRINTF\(...\) \\) s
-27.6 628 M (78:) s
+27.6 628 M (79:) s
 56.4 628 M
 (        __stubprintf \(__FILE__, __LINE__, __func__, __VA_ARGS__\)) s
-27.6 615 M (79:) s
+27.6 615 M (80:) s
 56.4 615 M
 (void __stubprintf \(const char* file, int line, const char* func,) s
-27.6 602 M (80:) s
+27.6 602 M (81:) s
 56.4 602 M
 (                   const char* format, ...\);) s
-27.6 589 M (81:) s
-27.6 576 M (82:) s
+27.6 589 M (82:) s
+27.6 576 M (83:) s
 56.4 576 M
 (//) s
-27.6 563 M (83:) s
+27.6 563 M (84:) s
 56.4 563 M
 (// Debugging utility.) s
-27.6 550 M (84:) s
+27.6 550 M (85:) s
 56.4 550 M
 (//) s
-27.6 537 M (85:) s
-27.6 524 M (86:) s
+27.6 537 M (86:) s
+27.6 524 M (87:) s
 56.4 524 M
 (void set_debugflags \(const char* flags\);) s
-27.6 511 M (87:) s
-56.4 511 M
-(   //) s
-27.6 498 M (88:) s
+27.6 511 M (88:) s
+27.6 498 M (89:) s
 56.4 498 M
-(   // Sets a string of debug flags to be used by DEBUGF statement) s
-5 485 M
-(s.) s
-27.6 472 M (89:) s
+(   // Sets a string of debug flags to be used by DEBUGF) s
+27.6 485 M (90:) s
+56.4 485 M
+(   // statements.  Uses the address of the string, and does) s
+27.6 472 M (91:) s
 56.4 472 M
-(   // Uses the address of the string, and does not copy it, so it) s
-27.6 459 M (90:) s
+(   // not copy it, so it must not be dangling.  If a particular) s
+27.6 459 M (92:) s
 56.4 459 M
-(   // must not be dangling.  If a particular debug flag has been ) s
-5 446 M
-(set,) s
-27.6 433 M (91:) s
+(   // debug flag has been set, messages are printed.  The format) s
+27.6 446 M (93:) s
+56.4 446 M
+(   // is identical to printf format.  The flag "@" turns on) s
+27.6 433 M (94:) s
 56.4 433 M
-(   // messages are printed.  The format is identical to printf fo) s
-5 420 M
-(rmat.) s
-27.6 407 M (92:) s
-56.4 407 M
-(   // The flag "@" turns on all flags.) s
-27.6 394 M (93:) s
+(   // all flags.) s
+27.6 420 M (95:) s
+27.6 407 M (96:) s
+27.6 394 M (97:) s
 56.4 394 M
-(   //) s
-27.6 381 M (94:) s
-27.6 368 M (95:) s
-56.4 368 M
 (bool is_debugflag \(char flag\);) s
-27.6 355 M (96:) s
+27.6 381 M (98:) s
+56.4 381 M
+(   //) s
+27.6 368 M (99:) s
+56.4 368 M
+(   // Checks to see if a debugflag is set.) s
+20.4 355 M (100:) s
 56.4 355 M
 (   //) s
-27.6 342 M (97:) s
-56.4 342 M
-(   // Checks to see if a debugflag is set.) s
-27.6 329 M (98:) s
+20.4 342 M (101:) s
+20.4 329 M (102:) s
 56.4 329 M
-(   //) s
-27.6 316 M (99:) s
-20.4 303 M (100:) s
-56.4 303 M
 (#ifdef NDEBUG) s
-20.4 290 M (101:) s
-56.4 290 M
+20.4 316 M (103:) s
+56.4 316 M
 (// Do not generate any code.) s
-20.4 277 M (102:) s
-56.4 277 M
+20.4 303 M (104:) s
+56.4 303 M
 (#define DEBUGF\(FLAG,...\)   /**/) s
-20.4 264 M (103:) s
-56.4 264 M
+20.4 290 M (105:) s
+56.4 290 M
 (#define DEBUGSTMT\(FLAG,STMTS\) /**/) s
-20.4 251 M (104:) s
-56.4 251 M
+20.4 277 M (106:) s
+56.4 277 M
 (#else) s
-20.4 238 M (105:) s
-56.4 238 M
+20.4 264 M (107:) s
+56.4 264 M
 (// Generate debugging code.) s
-20.4 225 M (106:) s
-56.4 225 M
+20.4 251 M (108:) s
+56.4 251 M
 (void __debugprintf \(char flag, const char* file, int line,) s
-20.4 212 M (107:) s
-56.4 212 M
+20.4 238 M (109:) s
+56.4 238 M
 (                    const char* func, const char* format, ...\);) s
-20.4 199 M (108:) s
-56.4 199 M
+20.4 225 M (110:) s
+56.4 225 M
 (#define DEBUGF\(FLAG,...\) \\) s
-20.4 186 M (109:) s
+20.4 212 M (111:) s
+56.4 212 M
+(        __debugprintf \(FLAG, __FILE__, __LINE__, __func__, \\) s
+20.4 199 M (112:) s
+56.4 199 M
+(                       __VA_ARGS__\)) s
+20.4 186 M (113:) s
 56.4 186 M
-(        __debugprintf \(FLAG, __FILE__, __LINE__, __func__, __VA_A) s
-5 173 M
-(RGS__\)) s
-20.4 160 M (110:) s
-56.4 160 M
 (#define DEBUGSTMT\(FLAG,STMTS\) \\) s
-20.4 147 M (111:) s
-56.4 147 M
+20.4 173 M (114:) s
+56.4 173 M
 (        if \(is_debugflag \(FLAG\)\) { DEBUGF \(FLAG, "\\n"\); STMTS }) s
-20.4 134 M (112:) s
-56.4 134 M
+20.4 160 M (115:) s
+56.4 160 M
 (#endif) s
-20.4 121 M (113:) s
-20.4 108 M (114:) s
+20.4 147 M (116:) s
+20.4 134 M (117:) s
+56.4 134 M
+(//) s
+20.4 121 M (118:) s
+56.4 121 M
+(// Definition of RCSID macro to include RCS info in obj and exec.) s
+20.4 108 M (119:) s
 56.4 108 M
 (//) s
-20.4 95 M (115:) s
-56.4 95 M
-(// Definition of RCSID macro to include RCS info in objs and exec) s
-5 82 M
-(bin.) s
-20.4 69 M (116:) s
-56.4 69 M
-(//) s
-20.4 56 M (117:) s
-20.4 43 M (118:) s
-56.4 43 M
+20.4 95 M (120:) s
+20.4 82 M (121:) s
+56.4 82 M
 (#define RCS3\(ID,N,X\) static const char ID##N[] = X;) s
-20.4 30 M (119:) s
-56.4 30 M
+20.4 69 M (122:) s
+56.4 69 M
 (#define RCS2\(N,X\) RCS3\(RCS_Id,N,X\)) s
-20.4 17 M (120:) s
-56.4 17 M
+20.4 56 M (123:) s
+56.4 56 M
 (#define RCSH\(X\) RCS2\(__COUNTER__,X\)) s
-20.4 4 M (121:) s
-56.4 4 M
+20.4 43 M (124:) s
+56.4 43 M
 (#define RCSC\(X\) RCSH\(X \\) s
-_R
-S
-%%Page: (4) 8
-%%BeginPageSetup
-_S
-38 24 translate
-/pagenum 4 def
-/fname (auxlib.h) def
-/fdir () def
-/ftail (auxlib.h) def
-% User defined strings:
-/pagenumstr (4) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
-/user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
-/user_header_center_str () def
-/user_header_right_str () def
-/user_footer_p false def
-%%EndPageSetup
-column_borders
-do_header
-20.4 693 M (122:) s
-56.4 693 M
+20.4 30 M (125:) s
+56.4 30 M
 ("\\0$Compiled: " __FILE__ " " __DATE__ " " __TIME__ " $"\)) s
-20.4 680 M (123:) s
-56.4 680 M
-(RCSH\("$Id: auxlib.h,v 1.1 2014-10-19 10:40:43-07 - - $"\) ) s
-20.4 667 M (124:) s
-56.4 667 M
+20.4 17 M (126:) s
+56.4 17 M
+(RCSH\("$Id: auxlib.h,v 1.2 2013-10-11 18:53:00-07 - - $"\) ) s
+20.4 4 M (127:) s
+56.4 4 M
 (#endif) s
 _R
 S
-%%Page: (1) 9
+%%Page: (1) 8
 %%BeginPageSetup
 _S
 38 24 translate
@@ -1417,10 +1417,11 @@ _S
 /ftail (auxlib.cpp) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -1575,7 +1576,7 @@ do_header
 27.6 4 M (54:) s
 _R
 S
-%%Page: (2) 10
+%%Page: (2) 9
 %%BeginPageSetup
 _S
 38 24 translate
@@ -1585,10 +1586,11 @@ _S
 /ftail (auxlib.cpp) def
 % User defined strings:
 /pagenumstr (2) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -1736,7 +1738,7 @@ do_header
 20.4 43 M (105:) s
 _R
 S
-%%Page: (3) 11
+%%Page: (3) 10
 %%BeginPageSetup
 _S
 38 24 translate
@@ -1746,10 +1748,11 @@ _S
 /ftail (auxlib.cpp) def
 % User defined strings:
 /pagenumstr (3) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -1825,11 +1828,11 @@ do_header
 20.4 381 M (130:) s
 20.4 368 M (131:) s
 56.4 368 M
-(RCSC\("$Id: auxlib.cpp,v 1.1 2014-10-19 10:40:43-07 - - $"\)) s
+(RCSC\("$Id: auxlib.cpp,v 1.1 2014-10-03 18:22:05-07 - - $"\)) s
 20.4 355 M (132:) s
 _R
 S
-%%Page: (1) 12
+%%Page: (1) 11
 %%BeginPageSetup
 _S
 38 24 translate
@@ -1839,10 +1842,11 @@ _S
 /ftail (lyutils.h) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/1) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -1945,32 +1949,29 @@ do_header
 56.4 225 M
 (int yylval_token \(int symbol\);) s
 27.6 212 M (38:) s
-56.4 212 M
-(void error_destructor \(astree*\);) s
 27.6 199 M (39:) s
-27.6 186 M (40:) s
-56.4 186 M
+56.4 199 M
 (void scanner_include \(void\);) s
+27.6 186 M (40:) s
 27.6 173 M (41:) s
+56.4 173 M
+(typedef astree* astree_pointer;) s
 27.6 160 M (42:) s
 56.4 160 M
-(typedef astree* astree_pointer;) s
+(#define YYSTYPE astree_pointer) s
 27.6 147 M (43:) s
 56.4 147 M
-(#define YYSTYPE astree_pointer) s
-27.6 134 M (44:) s
-56.4 134 M
 (#include "yyparse.h") s
+27.6 134 M (44:) s
 27.6 121 M (45:) s
+56.4 121 M
+(RCSH\("$Id: lyutils.h,v 1.2 2013-10-11 18:53:00-07 - - $"\)) s
 27.6 108 M (46:) s
 56.4 108 M
-(RCSH\("$Id: lyutils.h,v 1.1 2014-10-19 10:40:43-07 - - $"\)) s
-27.6 95 M (47:) s
-56.4 95 M
 (#endif) s
 _R
 S
-%%Page: (1) 13
+%%Page: (1) 12
 %%BeginPageSetup
 _S
 38 24 translate
@@ -1980,10 +1981,11 @@ _S
 /ftail (lyutils.cpp) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2085,7 +2087,7 @@ do_header
 27.6 225 M (37:) s
 _R
 S
-%%Page: (2) 14
+%%Page: (2) 13
 %%BeginPageSetup
 _S
 38 24 translate
@@ -2095,10 +2097,11 @@ _S
 /ftail (lyutils.cpp) def
 % User defined strings:
 /pagenumstr (2) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2219,7 +2222,7 @@ do_header
 27.6 160 M (79:) s
 _R
 S
-%%Page: (3) 15
+%%Page: (3) 14
 %%BeginPageSetup
 _S
 38 24 translate
@@ -2229,10 +2232,11 @@ _S
 /ftail (lyutils.cpp) def
 % User defined strings:
 /pagenumstr (3) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/3) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2294,11 +2298,11 @@ do_header
 27.6 459 M (98:) s
 27.6 446 M (99:) s
 56.4 446 M
-(RCSC\("$Id: lyutils.cpp,v 1.1 2014-10-19 10:40:43-07 - - $"\)) s
+(RCSC\("$Id: lyutils.cpp,v 1.1 2014-10-03 18:22:05-07 - - $"\)) s
 20.4 433 M (100:) s
 _R
 S
-%%Page: (1) 16
+%%Page: (1) 15
 %%BeginPageSetup
 _S
 38 24 translate
@@ -2308,10 +2312,11 @@ _S
 /ftail (stringset.h) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/19/14) def
-/modtimestr (10:40:43) def
+/moddatestr (10/21/14) def
+/pagecountstr (/1) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2320,28 +2325,28 @@ column_borders
 do_header
 34.8 693 M (1:) s
 56.4 693 M
-(// $Id: stringset.h,v 1.1 2014-10-19 10:40:43-07 - - $) s
-34.8 680 M (2:) s
-34.8 667 M (3:) s
-56.4 667 M
 (#ifndef __STRINGSET__) s
+34.8 680 M (2:) s
+56.4 680 M
+(#define __STRINGSET__) s
+34.8 667 M (3:) s
 34.8 654 M (4:) s
 56.4 654 M
-(#define __STRINGSET__) s
+(#include <string>) s
 34.8 641 M (5:) s
+56.4 641 M
+(#include <unordered_set>) s
 34.8 628 M (6:) s
 56.4 628 M
-(#include <string>) s
+(using namespace std;) s
 34.8 615 M (7:) s
-56.4 615 M
-(#include <unordered_set>) s
 34.8 602 M (8:) s
 56.4 602 M
-(using namespace std;) s
+(#include <stdio.h>) s
 34.8 589 M (9:) s
 27.6 576 M (10:) s
 56.4 576 M
-(#include <stdio.h>) s
+(#include "auxlib.h") s
 27.6 563 M (11:) s
 27.6 550 M (12:) s
 56.4 550 M
@@ -2353,11 +2358,13 @@ do_header
 27.6 511 M (15:) s
 27.6 498 M (16:) s
 56.4 498 M
-(#endif) s
+(RCSH\("$Id: stringset.h,v 1.1 2013-10-11 18:53:00-07 - - $"\)) s
 27.6 485 M (17:) s
+56.4 485 M
+(#endif) s
 _R
 S
-%%Page: (1) 17
+%%Page: (1) 16
 %%BeginPageSetup
 _S
 38 24 translate
@@ -2367,10 +2374,11 @@ _S
 /ftail (stringset.cpp) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/14/14) def
-/modtimestr (20:57:28) def
+/moddatestr (10/21/14) def
+/pagecountstr (/1) def
+/modtimestr (19:45:02) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2394,100 +2402,104 @@ do_header
 34.8 615 M (7:) s
 34.8 602 M (8:) s
 56.4 602 M
-(using stringset = unordered_set<string>;) s
+(typedef unordered_set<string> stringset;) s
 34.8 589 M (9:) s
 56.4 589 M
-(using stringset_citor = stringset::const_iterator;) s
+(typedef stringset::const_iterator stringset_citor;) s
 27.6 576 M (10:) s
+56.4 576 M
+(typedef stringset::const_local_iterator stringset_bucket_citor;) s
 27.6 563 M (11:) s
-56.4 563 M
-(stringset set;) s
 27.6 550 M (12:) s
+56.4 550 M
+(stringset set;) s
 27.6 537 M (13:) s
-56.4 537 M
-(const string* intern_stringset \(const char* string\) {) s
 27.6 524 M (14:) s
 56.4 524 M
-(   pair<stringset_citor,bool> handle = set.insert \(string\);) s
+(const string* intern_stringset \(const char* string\) {) s
 27.6 511 M (15:) s
 56.4 511 M
-(   return &*handle.first;) s
+(   pair<stringset_citor,bool> handle = set.insert \(string\);) s
 27.6 498 M (16:) s
 56.4 498 M
-(}) s
+(   return &*handle.first;) s
 27.6 485 M (17:) s
+56.4 485 M
+(}) s
 27.6 472 M (18:) s
-56.4 472 M
-(void dump_stringset \(FILE* out\) {) s
 27.6 459 M (19:) s
 56.4 459 M
-(   size_t max_bucket_size = 0;) s
+(void dump_stringset \(FILE* out\) {) s
 27.6 446 M (20:) s
 56.4 446 M
-(   for \(size_t bucket = 0; bucket < set.bucket_count\(\); ++bucket\)) s
-5 433 M
-( {) s
-27.6 420 M (21:) s
+(   size_t max_bucket_size = 0;) s
+27.6 433 M (21:) s
+56.4 433 M
+(   for \(size_t bucket = 0; bucket < set.bucket_count\(\);) s
+27.6 420 M (22:) s
 56.4 420 M
-(      bool need_index = true;) s
-27.6 407 M (22:) s
+(        ++bucket\) {) s
+27.6 407 M (23:) s
 56.4 407 M
-(      size_t curr_size = set.bucket_size \(bucket\);) s
-27.6 394 M (23:) s
+(      bool need_index = true;) s
+27.6 394 M (24:) s
 56.4 394 M
-(      if \(max_bucket_size < curr_size\) max_bucket_size = curr_siz) s
-5 381 M
-(e;) s
-27.6 368 M (24:) s
+(      size_t curr_size = set.bucket_size \(bucket\);) s
+27.6 381 M (25:) s
+56.4 381 M
+(      if \(max_bucket_size < curr_size\)) s
+27.6 368 M (26:) s
 56.4 368 M
-(      for \(auto itor = set.cbegin \(bucket\);) s
-27.6 355 M (25:) s
+(          max_bucket_size = curr_size;) s
+27.6 355 M (27:) s
 56.4 355 M
-(           itor != set.cend \(bucket\); ++itor\) {) s
-27.6 342 M (26:) s
+(      for \(stringset_bucket_citor itor = set.cbegin \(bucket\);) s
+27.6 342 M (28:) s
 56.4 342 M
-(         if \(need_index\) fprintf \(out, "stringset[%4lu]: ", bucke) s
-5 329 M
-(t\);) s
-27.6 316 M (27:) s
+(           itor != set.cend \(bucket\); ++itor\) {) s
+27.6 329 M (29:) s
+56.4 329 M
+(         if \(need_index\) fprintf \(out, "string[%4lu]: ", bucket\);) s
+27.6 316 M (30:) s
 56.4 316 M
-(                    else fprintf \(out, "          %4s   ", ""\);) s
-27.6 303 M (28:) s
+(                    else fprintf \(out, "       %4s   ", ""\);) s
+27.6 303 M (31:) s
 56.4 303 M
 (         need_index = false;) s
-27.6 290 M (29:) s
+27.6 290 M (32:) s
 56.4 290 M
 (         const string* str = &*itor;) s
-27.6 277 M (30:) s
+27.6 277 M (33:) s
 56.4 277 M
-(         fprintf \(out, "%22lu %p->\\"%s\\"\\n", set.hash_function\(\)\() s
-5 264 M
-(*str\),) s
-27.6 251 M (31:) s
+(         fprintf \(out, "%22lu %p->\\"%s\\"\\n",) s
+27.6 264 M (34:) s
+56.4 264 M
+(                  set.hash_function\(\)\(*str\), str, str->c_str\(\)\);) s
+27.6 251 M (35:) s
 56.4 251 M
-(                  str, str->c_str\(\)\);) s
-27.6 238 M (32:) s
-56.4 238 M
 (      }) s
-27.6 225 M (33:) s
-56.4 225 M
+27.6 238 M (36:) s
+56.4 238 M
 (   }) s
-27.6 212 M (34:) s
-56.4 212 M
+27.6 225 M (37:) s
+56.4 225 M
 (   fprintf \(out, "load_factor = %.3f\\n", set.load_factor\(\)\);) s
-27.6 199 M (35:) s
-56.4 199 M
+27.6 212 M (38:) s
+56.4 212 M
 (   fprintf \(out, "bucket_count = %lu\\n", set.bucket_count\(\)\);) s
-27.6 186 M (36:) s
-56.4 186 M
+27.6 199 M (39:) s
+56.4 199 M
 (   fprintf \(out, "max_bucket_size = %lu\\n", max_bucket_size\);) s
-27.6 173 M (37:) s
-56.4 173 M
+27.6 186 M (40:) s
+56.4 186 M
 (}) s
-27.6 160 M (38:) s
+27.6 173 M (41:) s
+27.6 160 M (42:) s
+56.4 160 M
+(RCSC\("$Id: stringset.cpp,v 1.1 2014-10-03 18:22:05-07 - - $"\)) s
 _R
 S
-%%Page: (1) 18
+%%Page: (1) 17
 %%BeginPageSetup
 _S
 38 24 translate
@@ -2497,10 +2509,11 @@ _S
 /ftail (yyparse.h) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/14/14) def
-/modtimestr (21:00:02) def
+/moddatestr (10/15/13) def
+/pagecountstr (/3) def
+/modtimestr (16:31:25) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2646,7 +2659,7 @@ do_header
 (   /* Put the tokens into the symbol table, so that GDB and other) s
 _R
 S
-%%Page: (2) 19
+%%Page: (2) 18
 %%BeginPageSetup
 _S
 38 24 translate
@@ -2656,10 +2669,11 @@ _S
 /ftail (yyparse.h) def
 % User defined strings:
 /pagenumstr (2) def
-/moddatestr (10/14/14) def
-/modtimestr (21:00:02) def
+/moddatestr (10/15/13) def
+/pagecountstr (/3) def
+/modtimestr (16:31:25) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2676,52 +2690,171 @@ do_header
 (   enum yytokentype {) s
 27.6 654 M (42:) s
 56.4 654 M
-(     ROOT = 258,) s
+(     TOK_VOID = 258,) s
 27.6 641 M (43:) s
 56.4 641 M
-(     IDENT = 259,) s
+(     TOK_BOOL = 259,) s
 27.6 628 M (44:) s
 56.4 628 M
-(     NUMBER = 260,) s
+(     TOK_CHAR = 260,) s
 27.6 615 M (45:) s
 56.4 615 M
-(     NEG = 263,) s
+(     TOK_INT = 261,) s
 27.6 602 M (46:) s
 56.4 602 M
-(     POS = 264) s
+(     TOK_STRING = 262,) s
 27.6 589 M (47:) s
 56.4 589 M
-(   };) s
+(     TOK_IF = 263,) s
 27.6 576 M (48:) s
 56.4 576 M
-(#endif) s
+(     TOK_ELSE = 264,) s
 27.6 563 M (49:) s
+56.4 563 M
+(     TOK_WHILE = 265,) s
 27.6 550 M (50:) s
+56.4 550 M
+(     TOK_RETURN = 266,) s
 27.6 537 M (51:) s
+56.4 537 M
+(     TOK_STRUCT = 267,) s
 27.6 524 M (52:) s
 56.4 524 M
-(#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED) s
+(     TOK_FALSE = 268,) s
 27.6 511 M (53:) s
 56.4 511 M
-(typedef int YYSTYPE;) s
+(     TOK_TRUE = 269,) s
 27.6 498 M (54:) s
 56.4 498 M
-(# define YYSTYPE_IS_TRIVIAL 1) s
+(     TOK_NULL = 270,) s
 27.6 485 M (55:) s
 56.4 485 M
-(# define yystype YYSTYPE /* obsolescent; will be withdrawn */) s
+(     TOK_NEW = 271,) s
 27.6 472 M (56:) s
 56.4 472 M
-(# define YYSTYPE_IS_DECLARED 1) s
+(     TOK_ARRAY = 272,) s
 27.6 459 M (57:) s
 56.4 459 M
-(#endif) s
+(     TOK_EQ = 273,) s
 27.6 446 M (58:) s
+56.4 446 M
+(     TOK_NE = 274,) s
 27.6 433 M (59:) s
 56.4 433 M
-(extern YYSTYPE yylval;) s
+(     TOK_LT = 275,) s
 27.6 420 M (60:) s
+56.4 420 M
+(     TOK_LE = 276,) s
 27.6 407 M (61:) s
+56.4 407 M
+(     TOK_GT = 277,) s
+27.6 394 M (62:) s
+56.4 394 M
+(     TOK_GE = 278,) s
+27.6 381 M (63:) s
+56.4 381 M
+(     TOK_IDENT = 279,) s
+27.6 368 M (64:) s
+56.4 368 M
+(     TOK_INTCON = 280,) s
+27.6 355 M (65:) s
+56.4 355 M
+(     TOK_CHARCON = 281,) s
+27.6 342 M (66:) s
+56.4 342 M
+(     TOK_STRINGCON = 282,) s
+27.6 329 M (67:) s
+56.4 329 M
+(     TOK_BLOCK = 283,) s
+27.6 316 M (68:) s
+56.4 316 M
+(     TOK_CALL = 284,) s
+27.6 303 M (69:) s
+56.4 303 M
+(     TOK_IFELSE = 285,) s
+27.6 290 M (70:) s
+56.4 290 M
+(     TOK_INITDECL = 286,) s
+27.6 277 M (71:) s
+56.4 277 M
+(     TOK_POS = 287,) s
+27.6 264 M (72:) s
+56.4 264 M
+(     TOK_NEG = 288,) s
+27.6 251 M (73:) s
+56.4 251 M
+(     TOK_NEWARRAY = 289,) s
+27.6 238 M (74:) s
+56.4 238 M
+(     TOK_TYPEID = 290,) s
+27.6 225 M (75:) s
+56.4 225 M
+(     TOK_FIELD = 291,) s
+27.6 212 M (76:) s
+56.4 212 M
+(     TOK_ORD = 292,) s
+27.6 199 M (77:) s
+56.4 199 M
+(     TOK_CHR = 293,) s
+27.6 186 M (78:) s
+56.4 186 M
+(     TOK_ROOT = 294) s
+27.6 173 M (79:) s
+56.4 173 M
+(   };) s
+27.6 160 M (80:) s
+56.4 160 M
+(#endif) s
+27.6 147 M (81:) s
+27.6 134 M (82:) s
+27.6 121 M (83:) s
+27.6 108 M (84:) s
+56.4 108 M
+(#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED) s
+27.6 95 M (85:) s
+56.4 95 M
+(typedef int YYSTYPE;) s
+27.6 82 M (86:) s
+56.4 82 M
+(# define YYSTYPE_IS_TRIVIAL 1) s
+27.6 69 M (87:) s
+56.4 69 M
+(# define yystype YYSTYPE /* obsolescent; will be withdrawn */) s
+27.6 56 M (88:) s
+56.4 56 M
+(# define YYSTYPE_IS_DECLARED 1) s
+27.6 43 M (89:) s
+56.4 43 M
+(#endif) s
+27.6 30 M (90:) s
+27.6 17 M (91:) s
+56.4 17 M
+(extern YYSTYPE yylval;) s
+27.6 4 M (92:) s
+_R
+S
+%%Page: (3) 19
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 3 def
+/fname (yyparse.h) def
+/fdir () def
+/ftail (yyparse.h) def
+% User defined strings:
+/pagenumstr (3) def
+/moddatestr (10/15/13) def
+/pagecountstr (/3) def
+/modtimestr (16:31:25) def
+/user_header_p true def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
+/user_header_center_str () def
+/user_header_right_str () def
+/user_footer_p false def
+%%EndPageSetup
+column_borders
+do_header
+27.6 693 M (93:) s
 _R
 S
 %%Page: (1) 20
@@ -2734,10 +2867,11 @@ _S
 /ftail (parser.y) def
 % User defined strings:
 /pagenumstr (1) def
-/moddatestr (10/14/14) def
-/modtimestr (20:10:34) def
+/moddatestr (10/16/13) def
+/pagecountstr (/2) def
+/modtimestr (11:22:22) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2758,128 +2892,128 @@ do_header
 56.4 641 M
 (#include "astree.h") s
 34.8 628 M (6:) s
-56.4 628 M
-(#include "assert.h") s
 34.8 615 M (7:) s
-34.8 602 M (8:) s
-56.4 602 M
+56.4 615 M
 (%}) s
+34.8 602 M (8:) s
 34.8 589 M (9:) s
+56.4 589 M
+(%debug) s
 27.6 576 M (10:) s
 56.4 576 M
-(%debug) s
+(%defines) s
 27.6 563 M (11:) s
 56.4 563 M
-(%defines) s
+(%error-verbose) s
 27.6 550 M (12:) s
 56.4 550 M
-(%error-verbose) s
+(%token-table) s
 27.6 537 M (13:) s
 56.4 537 M
-(%token-table) s
-27.6 524 M (14:) s
-56.4 524 M
 (%verbose) s
+27.6 524 M (14:) s
 27.6 511 M (15:) s
+56.4 511 M
+(%token TOK_VOID TOK_BOOL TOK_CHAR TOK_INT TOK_STRING) s
 27.6 498 M (16:) s
 56.4 498 M
-(%token TOK_VOID TOK_BOOL TOK_CHAR TOK_INT TOK_STRING) s
+(%token TOK_IF TOK_ELSE TOK_WHILE TOK_RETURN TOK_STRUCT) s
 27.6 485 M (17:) s
 56.4 485 M
-(%token TOK_IF TOK_ELSE TOK_WHILE TOK_RETURN TOK_STRUCT) s
+(%token TOK_FALSE TOK_TRUE TOK_NULL TOK_NEW TOK_ARRAY) s
 27.6 472 M (18:) s
 56.4 472 M
-(%token TOK_FALSE TOK_TRUE TOK_NULL TOK_NEW TOK_ARRAY) s
+(%token TOK_EQ TOK_NE TOK_LT TOK_LE TOK_GT TOK_GE) s
 27.6 459 M (19:) s
 56.4 459 M
-(%token TOK_EQ TOK_NE TOK_LT TOK_LE TOK_GT TOK_GE) s
-27.6 446 M (20:) s
-56.4 446 M
 (%token TOK_IDENT TOK_INTCON TOK_CHARCON TOK_STRINGCON) s
+27.6 446 M (20:) s
 27.6 433 M (21:) s
+56.4 433 M
+(%token TOK_BLOCK TOK_CALL TOK_IFELSE TOK_INITDECL) s
 27.6 420 M (22:) s
 56.4 420 M
-(%token TOK_BLOCK TOK_CALL TOK_IFELSE TOK_INITDECL) s
+(%token TOK_POS TOK_NEG TOK_NEWARRAY TOK_TYPEID TOK_FIELD) s
 27.6 407 M (23:) s
 56.4 407 M
-(%token TOK_POS TOK_NEG TOK_NEWARRAY TOK_TYPEID TOK_FIELD) s
-27.6 394 M (24:) s
-56.4 394 M
 (%token TOK_ORD TOK_CHR TOK_ROOT) s
+27.6 394 M (24:) s
 27.6 381 M (25:) s
-27.6 368 M (26:) s
-56.4 368 M
+56.4 381 M
 (%start program) s
+27.6 368 M (26:) s
 27.6 355 M (27:) s
-27.6 342 M (28:) s
-56.4 342 M
+56.4 355 M
 (%%) s
+27.6 342 M (28:) s
 27.6 329 M (29:) s
+56.4 329 M
+(program : program token | ;) s
 27.6 316 M (30:) s
 56.4 316 M
-(program : program token | ;) s
+(token   : '\(' | '\)' | '[' | ']' | '{' | '}' | ';' | ',' | '.') s
 27.6 303 M (31:) s
 56.4 303 M
-(token   : '\(' | '\)' | '[' | ']' | '{' | '}' | ';' | ',' | '.') s
+(        | '=' | '+' | '-' | '*' | '/' | '%' | '!') s
 27.6 290 M (32:) s
 56.4 290 M
-(        | '=' | '+' | '-' | '*' | '/' | '%' | '!') s
+(        | TOK_VOID | TOK_BOOL | TOK_CHAR | TOK_INT | TOK_STRING) s
 27.6 277 M (33:) s
 56.4 277 M
-(        | TOK_VOID | TOK_BOOL | TOK_CHAR | TOK_INT | TOK_STRING) s
+(        | TOK_IF | TOK_ELSE | TOK_WHILE | TOK_RETURN | TOK_STRUCT) s
 27.6 264 M (34:) s
 56.4 264 M
-(        | TOK_IF | TOK_ELSE | TOK_WHILE | TOK_RETURN | TOK_STRUCT) s
+(        | TOK_FALSE | TOK_TRUE | TOK_NULL | TOK_NEW | TOK_ARRAY) s
 27.6 251 M (35:) s
 56.4 251 M
-(        | TOK_FALSE | TOK_TRUE | TOK_NULL | TOK_NEW | TOK_ARRAY) s
+(        | TOK_EQ | TOK_NE | TOK_LT | TOK_LE | TOK_GT | TOK_GE) s
 27.6 238 M (36:) s
 56.4 238 M
-(        | TOK_EQ | TOK_NE | TOK_LT | TOK_LE | TOK_GT | TOK_GE) s
+(        | TOK_IDENT | TOK_INTCON | TOK_CHARCON | TOK_STRINGCON) s
 27.6 225 M (37:) s
 56.4 225 M
-(        | TOK_IDENT | TOK_INTCON | TOK_CHARCON | TOK_STRINGCON) s
+(        | TOK_ORD | TOK_CHR | TOK_ROOT) s
 27.6 212 M (38:) s
 56.4 212 M
-(        | TOK_ORD | TOK_CHR | TOK_ROOT) s
-27.6 199 M (39:) s
-56.4 199 M
 (        ;) s
+27.6 199 M (39:) s
 27.6 186 M (40:) s
-27.6 173 M (41:) s
-56.4 173 M
+56.4 186 M
 (%%) s
+27.6 173 M (41:) s
 27.6 160 M (42:) s
+56.4 160 M
+(const char *get_yytname \(int symbol\) {) s
 27.6 147 M (43:) s
 56.4 147 M
-(const char *get_yytname \(int symbol\) {) s
+(   return yytname [YYTRANSLATE \(symbol\)];) s
 27.6 134 M (44:) s
 56.4 134 M
-(   return yytname [YYTRANSLATE \(symbol\)];) s
-27.6 121 M (45:) s
-56.4 121 M
 (}) s
+27.6 121 M (45:) s
 27.6 108 M (46:) s
 27.6 95 M (47:) s
+56.4 95 M
+(bool is_defined_token \(int symbol\) {) s
 27.6 82 M (48:) s
 56.4 82 M
-(bool is_defined_token \(int symbol\) {) s
+(   return YYTRANSLATE \(symbol\) > YYUNDEFTOK;) s
 27.6 69 M (49:) s
 56.4 69 M
-(   return YYTRANSLATE \(symbol\) > YYUNDEFTOK;) s
-27.6 56 M (50:) s
-56.4 56 M
 (}) s
+27.6 56 M (50:) s
 27.6 43 M (51:) s
+56.4 43 M
+(static void* yycalloc \(size_t size\) {) s
 27.6 30 M (52:) s
 56.4 30 M
-(static void* yycalloc \(size_t size\) {) s
+(   void* result = calloc \(1, size\);) s
 27.6 17 M (53:) s
 56.4 17 M
-(   void* result = calloc \(1, size\);) s
+(   assert \(result != NULL\);) s
 27.6 4 M (54:) s
 56.4 4 M
-(   assert \(result != NULL\);) s
+(   return result;) s
 _R
 S
 %%Page: (2) 21
@@ -2892,10 +3026,11 @@ _S
 /ftail (parser.y) def
 % User defined strings:
 /pagenumstr (2) def
-/moddatestr (10/14/14) def
-/modtimestr (20:10:34) def
+/moddatestr (10/16/13) def
+/pagecountstr (/2) def
+/modtimestr (11:22:22) def
 /user_header_p true def
-/user_header_left_str (/afs/cats.ucsc.edu/users/i/smorad/cmps104a/asg2/) def
+/user_header_left_str ($cmps104a-wm/Assignments/code/utility-code/) def
 /user_header_center_str () def
 /user_header_right_str () def
 /user_footer_p false def
@@ -2904,11 +3039,8 @@ column_borders
 do_header
 27.6 693 M (55:) s
 56.4 693 M
-(   return result;) s
-27.6 680 M (56:) s
-56.4 680 M
 (}) s
-27.6 667 M (57:) s
+27.6 680 M (56:) s
 _R
 S
 %%Trailer

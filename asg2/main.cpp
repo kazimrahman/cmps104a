@@ -13,6 +13,7 @@ using namespace std;
 #include "lyutils.h"
 #include "stringset.h"
 #include "auxlib.h"
+#include "astree.h"
 
 #define BUFSIZE 4096
 
@@ -30,18 +31,21 @@ FILE* preprocess(string ocfname, string options){
    
 }
 
+
+
 void fill_string_table(FILE* pipe, char* filename){
 	unsigned token_type;
 	unsigned linenr = 1;
 	unsigned charnr = 1;
+	unsigned filenr = 2;
+	astree* root = new_astree(0, filenr, linenr, charnr, "root");
 	while((token_type = yylex())){
-		if (sscanf (yytext, "# %d \"%[^\"]\"",
-				&linenr, filename) == 2){
-         continue;
-     	}
 		if (token_type == YYEOF)
 			return;
-      intern_stringset(strdup(yytext));
+		astree* child = new_astree(token_type, filenr, linenr, charnr, yytext);
+		adopt1(root, child);
+		if (token_type == TOK_IDENT)
+	      intern_stringset(strdup(yytext));
 		if (*yytext == '\n'){
 			linenr++;
 			charnr = 1;
@@ -51,6 +55,7 @@ void fill_string_table(FILE* pipe, char* filename){
 			DEBUGF('a', "%u\n", charnr);
 		}
 	}
+	dump_astree(stdout, root);
 }
 
 char* append_extension(char* ocfname, string app_extension){
