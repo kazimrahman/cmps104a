@@ -32,30 +32,40 @@ FILE* preprocess(string ocfname, string options){
 }
 
 
+void print_tokens(astree* root, FILE* fp){
+	if (fp == NULL)
+		fp = stdout;
+	for(auto iter=root->children.begin(); iter!=root->children.end(); ++iter)
+			  printf("%5zu %zu.%03zu %15s (%s)\n", 
+				  (*iter)->filenr,
+				  (*iter)->linenr,
+				  (*iter)->offset,
+				  get_yytname((*iter)->symbol),
+				  (*iter)->lexinfo->c_str());
+}
 
 void fill_string_table(FILE* pipe, char* filename){
 	unsigned token_type;
 	unsigned linenr = 1;
-	unsigned charnr = 1;
+	unsigned charnr = 0;
 	unsigned filenr = 2;
-	astree* root = new_astree(0, filenr, linenr, charnr, "root");
+	astree* root = new_astree(TOK_ROOT, filenr, linenr, charnr, "root");
 	while((token_type = yylex())){
 		if (token_type == YYEOF)
 			return;
 		astree* child = new_astree(token_type, filenr, linenr, charnr, yytext);
 		adopt1(root, child);
-		if (token_type == TOK_IDENT)
-	      intern_stringset(strdup(yytext));
 		if (*yytext == '\n'){
 			linenr++;
-			charnr = 1;
+			charnr = 0;
 		}
 		else {
 			charnr+= sizeof(*yytext);
 			DEBUGF('a', "%u\n", charnr);
 		}
 	}
-	dump_astree(stdout, root);
+	FILE* fp = fopen(filename, "r");
+	print_tokens(root, fp);
 }
 
 char* append_extension(char* ocfname, string app_extension){
@@ -76,14 +86,14 @@ void parse(FILE* yyin){
 int main (int argc, char **argv) {
    int c;
 	bool yflag = false;
-	int lflag = (int)false;
+	int lflag = 0;
    string dflag;
    string atflag;
 
    while((c = getopt(argc-1, argv, "lyD:@:")) != -1)
       switch(c){
          case 'l':
-				lflag = true;
+				lflag = 1;
             break;
          case 'y':
             yflag = true;
@@ -97,7 +107,7 @@ int main (int argc, char **argv) {
          default:
             fprintf(stderr, "Unknown option `%s'\n", optarg);
       }
-		int yy_flex_debug = lflag;
+	int yy_flex_debug = lflag;
    char* ocfname = argv[argc-1];
    if (!strstr(ocfname, ".oc")){
       fprintf(stderr, "File %s must be an .oc file\n", ocfname);
