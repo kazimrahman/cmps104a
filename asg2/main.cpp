@@ -12,8 +12,10 @@ using namespace std;
 #include <vector>
 #include "lyutils.h"
 #include "stringset.h"
+#include "auxlib.h"
 
 #define BUFSIZE 4096
+
 
 /*Returns a pipe to a preprocessor which has been fed ocfname*/
 FILE* preprocess(string ocfname, string options){
@@ -29,33 +31,26 @@ FILE* preprocess(string ocfname, string options){
 }
 
 void fill_string_table(FILE* pipe, char* filename){
-   //read preprocessed data into hashtable
-   char input_buffer[BUFSIZE];
-   char* saveptr;
-	int linenr = 1;
-   //while(fgets(input_buffer, BUFSIZE, pipe) != NULL){
-	while(yylex() != YYEOF){
-		//if line is preproc is directive, skip it
-		if (sscanf (input_buffer, "# %d \"%[^\"]\"",
-		                              &linenr, filename) == 2){
-			continue;
+	unsigned token_type;
+	unsigned linenr = 1;
+	unsigned charnr = 1;
+	while((token_type = yylex())){
+		if (sscanf (yytext, "# %d \"%[^\"]\"",
+				&linenr, filename) == 2){
+         continue;
+     	}
+		if (token_type == YYEOF)
+			return;
+      intern_stringset(strdup(yytext));
+		if (*yytext == '\n'){
+			linenr++;
+			charnr = 1;
 		}
-      char* token = strtok_r(input_buffer, " \t\n", &saveptr);
-      if (token != NULL){
-         intern_stringset(strdup(token));
-      }
-      while(1){
-			printf("bork");
-         token = strtok_r(NULL, " \t\n", &saveptr);
-         if (token == NULL)
-            break;
-         else{
-            intern_stringset(strdup(token));
-         }
-         
-      }
-	linenr++;
-   }
+		else {
+			charnr+= sizeof(*yytext);
+			DEBUGF('a', "%u\n", charnr);
+		}
+	}
 }
 
 char* append_extension(char* ocfname, string app_extension){
@@ -92,7 +87,7 @@ int main (int argc, char **argv) {
             dflag = optarg;
             break;
          case '@':
-            atflag = optarg;
+				set_debugflags(optarg);
             break;
          default:
             fprintf(stderr, "Unknown option `%s'\n", optarg);
@@ -112,8 +107,8 @@ int main (int argc, char **argv) {
 
    //File parsing
    yyin = preprocess(ocfname, dflag);   
-   //fill_string_table(yyin, ocfname);
-	parse(yyin);
+   fill_string_table(yyin, ocfname);
+	//parse(yyin);
    fclose(yyin);
 	char* out_fname = append_extension(ocfname, ".str");
 

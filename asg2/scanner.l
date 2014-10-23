@@ -59,12 +59,8 @@ STRING (\"([^\\"\n]|\\[\\’"0nt])*\")
 "}"				{ return yylval_token ('}'); }
 ","				{ return yylval_token (','); }
 "."				{ return yylval_token ('.'); }
-"=="			{ return yylval_token ("=="); }
-"!="			{ return yylval_token ("!="); }
 "<"				{ return yylval_token ('<'); }
-"<="			{ return yylval_token ("<="); }
 ">"				{ return yylval_token ('>'); }
-">="			{ return yylval_token (">="); }
 "%"				{ return yylval_token ('%'); }
 "!"				{ return yylval_token ('!'); }
 
