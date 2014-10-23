@@ -36,10 +36,11 @@ void print_tokens(astree* root, FILE* fp){
 	if (fp == NULL)
 		fp = stdout;
 	for(auto iter=root->children.begin(); iter!=root->children.end(); ++iter)
-			  printf("%5zu %zu.%03zu %15s (%s)\n", 
+			  fprintf(fp, "%5zu %2zu.%03zu %4u  %-15s (%s)\n", 
 				  (*iter)->filenr,
 				  (*iter)->linenr,
 				  (*iter)->offset,
+				  (*iter)->symbol,
 				  get_yytname((*iter)->symbol),
 				  (*iter)->lexinfo->c_str());
 }
@@ -64,8 +65,8 @@ void fill_string_table(FILE* pipe, char* filename){
 			DEBUGF('a', "%u\n", charnr);
 		}
 	}
-	FILE* fp = fopen(filename, "r");
-	print_tokens(root, fp);
+	//FILE* fp = fopen(filename, "r");
+	print_tokens(root, stdout);
 }
 
 char* append_extension(char* ocfname, string app_extension){
