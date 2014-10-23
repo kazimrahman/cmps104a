@@ -1,4 +1,26 @@
+head	1.1;
+access;
+symbols;
+locks;
+comment	@// @;
 
+
+1.1
+date	2014.10.19.17.40.43;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@-
+@
+text
+@
 #include <assert.h>
 #include <errno.h>
 #include <libgen.h>
@@ -106,7 +128,7 @@ void __stubprintf (const char* file, int line, const char* func,
 
 void set_debugflags (const char* flags) {
    debugflags = flags;
-   if (strchr (debugflags, '@') != NULL) alldebugflags = true;
+   if (strchr (debugflags, '@@') != NULL) alldebugflags = true;
    DEBUGF ('x', "Debugflags = \"%s\", all = %d\n",
            debugflags, alldebugflags);
 }
@@ -128,5 +150,6 @@ void __debugprintf (char flag, const char* file, int line,
    fflush (NULL);
 }
 
-RCSC("$Id: auxlib.cpp,v 1.1 2014-10-19 10:40:43-07 - - $")
+RCSC("$Id: auxlib.cpp,v 1.1 2014-10-03 18:22:05-07 - - $")
 
+@

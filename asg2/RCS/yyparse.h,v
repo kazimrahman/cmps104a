@@ -1,4 +1,26 @@
+head	1.1;
+access;
+symbols;
+locks;
+comment	@ * @;
 
+
+1.1
+date	2014.10.19.17.40.43;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@-
+@
+text
+@
 /* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton interface for Bison's Yacc-like parsers in C
@@ -43,10 +65,7 @@
      IDENT = 259,
      NUMBER = 260,
      NEG = 263,
-     POS = 264,
-	  CHAR = 265,
-	  STRING = 266,
-	  RESERVED = 267
+     POS = 264
    };
 #endif
 
@@ -62,3 +81,4 @@ typedef int YYSTYPE;
 extern YYSTYPE yylval;
 
 
+@

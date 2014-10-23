@@ -1,4 +1,26 @@
+head	1.1;
+access;
+symbols;
+locks;
+comment	@// @;
 
+
+1.1
+date	2014.10.19.17.40.43;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@-
+@
+text
+@
 #include <assert.h>
 #include <inttypes.h>
 #include <stdarg.h>
@@ -108,5 +130,6 @@ void free_ast2 (astree* tree1, astree* tree2) {
    free_ast (tree2);
 }
 
-RCSC("$Id: astree.cpp,v 1.1 2014-10-19 10:40:43-07 - - $")
+RCSC("$Id: astree.cpp,v 1.1 2014-10-03 18:22:05-07 - - $")
 
+@

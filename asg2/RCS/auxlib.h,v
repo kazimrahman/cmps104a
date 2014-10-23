@@ -1,4 +1,26 @@
-#ifndef __AUXLIB_H__
+head	1.1;
+access;
+symbols;
+locks;
+comment	@ * @;
+
+
+1.1
+date	2014.10.19.17.40.43;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@-
+@
+text
+@#ifndef __AUXLIB_H__
 #define __AUXLIB_H__
 
 #include <stdarg.h>
@@ -89,7 +111,7 @@ void set_debugflags (const char* flags);
    // Uses the address of the string, and does not copy it, so it
    // must not be dangling.  If a particular debug flag has been set,
    // messages are printed.  The format is identical to printf format.
-   // The flag "@" turns on all flags.
+   // The flag "@@" turns on all flags.
    //
 
 bool is_debugflag (char flag);
@@ -120,5 +142,6 @@ void __debugprintf (char flag, const char* file, int line,
 #define RCSH(X) RCS2(__COUNTER__,X)
 #define RCSC(X) RCSH(X \
 "\0$Compiled: " __FILE__ " " __DATE__ " " __TIME__ " $")
-RCSH("$Id: auxlib.h,v 1.1 2014-10-19 10:40:43-07 - - $") 
+RCSH("$Id: auxlib.h,v 1.2 2013-09-19 19:55:32-07 - - $") 
 #endif
+@
