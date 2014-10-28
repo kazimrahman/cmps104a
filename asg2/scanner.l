@@ -27,10 +27,10 @@ NUMBER          {DIGIT}+
 PREPROC (#{NUMBER} {STRING})
 IDENT           ({LETTER}({LETTER}|{DIGIT})*)
 INVALID_IDENT ({NUMBER}+{IDENT})
-CHAR (’([^\\’\n]|\\[\\’"0nt])’)
+CHAR ('([^\\'\n]|\\[\\'"0nt])')
 STRING (\"([^\\"\n]|\\[\\’"0nt])*\")
-BADSTRING (\"[\\"\n]*\")
-BADCHAR ('([\\'\n])')
+BADSTRING (\"["\n]*\")
+BADCHAR ('(['\n])')
 
 %%
 
