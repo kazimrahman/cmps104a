@@ -11,7 +11,6 @@
 %}
 
 %option 8bit
-%option debug
 %option ecs
 %option nodefault
 %option nounput
@@ -19,17 +18,19 @@
 %option perf-report
 %option verbose
 %option warn
+%option debug
 
 LETTER          [A-Za-z_]
 DIGIT           [0-9]
 NUMBER          {DIGIT}+
 
-PREPROC #{NUMBER} {STRING}
-RESERVED void|bool|char|int|string|struct|if|else|while|return|new|false|true|null|ord|chr
+PREPROC (#{NUMBER} {STRING})
 IDENT           ({LETTER}({LETTER}|{DIGIT})*)
-INVALID_IDENT {NUMBER}+{IDENT}
+INVALID_IDENT ({NUMBER}+{IDENT})
 CHAR (’([^\\’\n]|\\[\\’"0nt])’)
 STRING (\"([^\\"\n]|\\[\\’"0nt])*\")
+BADSTRING (\"[\\"\n]*\")
+BADCHAR ('([\\'\n])')
 
 %%
 
@@ -65,6 +66,8 @@ STRING (\"([^\\"\n]|\\[\\’"0nt])*\")
 {IDENT}			{ return yylval_token (TOK_IDENT); 			}
 {CHAR}			{ return yylval_token (TOK_CHARCON); 		}
 {STRING}			{ return yylval_token (TOK_STRINGCON); 	}
+{BADCHAR}		{ scanner_badtoken(yytext);					} 
+{BADSTRING}		{ scanner_badtoken(yytext);					}
 
 "="            { return yylval_token ('=');	}
 "+"            { return yylval_token ('+');	}
@@ -83,6 +86,6 @@ STRING (\"([^\\"\n]|\\[\\’"0nt])*\")
 "%"				{ return yylval_token ('%');	}
 "!"				{ return yylval_token ('!');	}
 
-.               { scanner_badchar (*yytext); }
+.              { scanner_badchar (*yytext); }
 
 %%

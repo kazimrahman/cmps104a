@@ -19,7 +19,7 @@ HYGEN     = yyparse.h
 CYGEN     = yyparse.cc
 CGENS     = ${CLGEN} ${CYGEN}
 ALLGENS   = ${HYGEN} ${CGENS}
-EXECBIN   = zexprsm
+EXECBIN   = oc
 ALLCSRC   = ${CSOURCES} ${CGENS}
 OBJECTS   = ${ALLCSRC:.cc=.o}
 LREPORT   = yylex.output
@@ -29,7 +29,7 @@ REPORTS   = ${LREPORT} ${YREPORT} ${IREPORT}
 ALLSRC    = ${ETCSRC} ${YSOURCES} ${LSOURCES} ${HSOURCES} ${CSOURCES}
 TESTINS   = ${wildcard test?.in}
 LISTSRC   = ${ALLSRC} ${HYGEN}
-
+TESTFILES = 
 #
 # Definitions of the compiler and compilation options:
 #
@@ -90,7 +90,7 @@ lis : ${LISTSRC} tests
 # Clean and spotless remove generated files.
 #
 clean :
-	rm *.o *.str *.tok
+	rm *.o *.str *.tok yylex.cc yyparse.cc *.out *.err *.oc *.pdf *.ps *.output
 #	- rm ${OBJECTS} ${ALLGENS} ${REPORTS} ${DEPSFILE} core
 #	- rm ${foreach test, ${TESTINS:.in=}, \
 #		${patsubst %, ${test}.%, out err}}
@@ -117,6 +117,11 @@ ${DEPSFILE} :
 tests : ${EXECBIN}
 	touch ${TESTINS}
 	make --no-print-directory ${TESTINS:.in=.out}
+
+test: ${EXECBIN}
+	find \
+	/afs/cats.ucsc.edu/courses/cmps104a-wm/Assignments/oc-programs/\
+	-name '*.oc' | xargs ${EXECBIN};
 
 %.out %.err : %.in ${EXECBIN}
 	( ${VALGRIND} ${EXECBIN} -ly -@@ $< \

@@ -32,41 +32,56 @@ FILE* preprocess(string ocfname, string options){
 }
 
 
-void print_tokens(astree* root, FILE* fp){
-	if (fp == NULL)
-		fp = stdout;
-	for(auto iter=root->children.begin(); iter!=root->children.end(); ++iter)
-			  fprintf(fp, "%5zu %2zu.%03zu %4u  %-15s (%s)\n", 
-				  (*iter)->filenr,
-				  (*iter)->linenr,
-				  (*iter)->offset,
-				  (*iter)->symbol,
-				  get_yytname((*iter)->symbol),
-				  (*iter)->lexinfo->c_str());
+void dump_tokens(astree* root, FILE* fp){
+        unsigned filenr = root->filenr;
+        fprintf(fp, "# %d \"%s\"\n", filenr, 
+            scanner_filename(filenr)->c_str()); 
+    for(auto iter=root->children.begin(); 
+        iter!=root->children.end(); ++iter){
+        if ((*iter)->filenr != filenr){
+            filenr = (*iter)->filenr;
+            fprintf(fp, "# %d \"%s\"\n", filenr, 
+                scanner_filename(filenr)->c_str());
+        }
+        fprintf(fp, "%5zu %2zu.%03zu %4u  %-15s (%s)\n", 
+            (*iter)->filenr,
+            (*iter)->linenr,
+            (*iter)->offset,
+            (*iter)->symbol,
+            get_yytname((*iter)->symbol),
+            (*iter)->lexinfo->c_str());
+    }
 }
 
-void fill_string_table(FILE* pipe, char* filename){
-	unsigned token_type;
-	unsigned linenr = 1;
-	unsigned charnr = 0;
-	unsigned filenr = 2;
-	astree* root = new_astree(TOK_ROOT, filenr, linenr, charnr, "root");
-	while((token_type = yylex())){
-		if (token_type == YYEOF)
-			return;
-		astree* child = new_astree(token_type, filenr, linenr, charnr, yytext);
-		adopt1(root, child);
-		if (*yytext == '\n'){
-			linenr++;
-			charnr = 0;
-		}
-		else {
-			charnr+= sizeof(*yytext);
-			DEBUGF('a', "%u\n", charnr);
-		}
-	}
-	//FILE* fp = fopen(filename, "r");
-	print_tokens(root, stdout);
+astree* fill_string_table(char* filename){
+    //Reads yyin, fills stringtable and returns an AST root
+    unsigned token_type;
+    unsigned linenr = 1;
+    unsigned charnr = 0;
+    unsigned filenr = 0;
+    astree* root = new_astree(
+        TOK_ROOT, filenr, linenr, charnr, "root");
+    while((token_type = yylex())){
+        if (token_type == YYEOF)
+            break;
+        if (sscanf(yytext, "# %d \"%[^\"]\"", &linenr, filename) == 2){
+            filenr++;
+        }
+        astree* child = new_astree(
+            token_type, filenr, linenr, charnr, yytext);
+        adopt1(root, child);
+        if (*yytext == '\n'){
+            linenr++;
+            charnr = 0;
+        }
+        else {
+            charnr+= sizeof(*yytext);
+            DEBUGF('a', "%u\n", charnr);
+        }
+    }
+    //FILE* fp = fopen(filename, "r");
+    //print_tokens(root, stdout);
+    return root;
 }
 
 char* append_extension(char* ocfname, string app_extension){
@@ -75,26 +90,21 @@ char* append_extension(char* ocfname, string app_extension){
    auto dot_index = strrchr(out_fname, '.');
    *dot_index = '\0';
    strcat(out_fname, app_extension.c_str());
-	return strdup(out_fname);
-}
-
-void parse(FILE* yyin){
-	while(yylex() != YYEOF){
-		printf(yytext);
-	}
+    return strdup(out_fname);
 }
 
 int main (int argc, char **argv) {
    int c;
-	bool yflag = false;
-	int lflag = 0;
+    bool yflag = false;
+    int lflag = 0;
    string dflag;
    string atflag;
+    set_execname(argv[0]);
 
    while((c = getopt(argc-1, argv, "lyD:@:")) != -1)
       switch(c){
          case 'l':
-				lflag = 1;
+                lflag = 1;
             break;
          case 'y':
             yflag = true;
@@ -103,16 +113,17 @@ int main (int argc, char **argv) {
             dflag = optarg;
             break;
          case '@':
-				set_debugflags(optarg);
+                set_debugflags(optarg);
             break;
          default:
             fprintf(stderr, "Unknown option `%s'\n", optarg);
       }
-	int yy_flex_debug = lflag;
+   yy_flex_debug = lflag;
+   yydebug = yflag;
    char* ocfname = argv[argc-1];
    if (!strstr(ocfname, ".oc")){
       fprintf(stderr, "File %s must be an .oc file\n", ocfname);
-      exit(1);
+        set_exitstatus(1);
    }
    FILE* tmp = fopen(ocfname, "r");
    if (tmp == NULL){
@@ -123,14 +134,17 @@ int main (int argc, char **argv) {
 
    //File parsing
    yyin = preprocess(ocfname, dflag);   
-   fill_string_table(yyin, ocfname);
-	//parse(yyin);
+   astree* ast_root = fill_string_table(ocfname);
    fclose(yyin);
-	char* out_fname = append_extension(ocfname, ".str");
+   char* str_fname = append_extension(ocfname, ".str");
+   char* tok_fname = append_extension(ocfname, ".tok");
 
    //Dump str to file
-   FILE* outfile = fopen(out_fname, "w");
-   dump_stringset(outfile);
-   fclose(outfile);
-   return EXIT_SUCCESS;
+   FILE* strfile = fopen(str_fname, "w");
+   FILE* tokfile = fopen(tok_fname, "w");
+   dump_stringset(strfile);
+   dump_tokens(ast_root, tokfile);
+   fclose(strfile);
+   fclose(tokfile);
+   return get_exitstatus();
 }
