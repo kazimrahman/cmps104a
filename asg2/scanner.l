@@ -26,11 +26,14 @@ NUMBER          {DIGIT}+
 
 PREPROC (#{NUMBER} {STRING})
 IDENT           ({LETTER}({LETTER}|{DIGIT})*)
-INVALID_IDENT ({NUMBER}+{IDENT})
+BADIDENT ({NUMBER}+{IDENT})
 CHAR ('([^\\'\n]|\\[\\'"0nt])')
 STRING (\"([^\\"\n]|\\[\\’"0nt])*\")
-BADSTRING (\"["\n]*\")
-BADCHAR ('(['\n])')
+ABADSTRING (\"[^\"]*\n|\"[\\"\n]\")
+BBADSTRING (\".\"|\"[^\n\"]*\n)
+CBADSTRING (\"[\\\n']*\")
+BADSTRING (\"[^\n\"\\]*(.|\n))
+BADCHAR ('(.|\n)*')
 
 %%
 
@@ -64,6 +67,7 @@ BADCHAR ('(['\n])')
 
 {NUMBER}			{ return yylval_token (TOK_INTCON);			}
 {IDENT}			{ return yylval_token (TOK_IDENT); 			}
+{BADIDENT}     { scanner_badtoken(yytext);               }
 {CHAR}			{ return yylval_token (TOK_CHARCON); 		}
 {STRING}			{ return yylval_token (TOK_STRINGCON); 	}
 {BADCHAR}		{ scanner_badtoken(yytext);					} 

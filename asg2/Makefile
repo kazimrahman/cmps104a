@@ -2,7 +2,7 @@
 
 MKFILE    = Makefile
 DEPSFILE  = ${MKFILE}.deps
-NOINCLUDE = ci clean spotless
+NOINCLUDE = clean spotless
 NEEDINCL  = ${filter ${NOINCLUDE}, ${MAKECMDGOALS}}
 VALGRIND  = valgrind --leak-check=full --show-reachable=yes
 
@@ -29,7 +29,6 @@ REPORTS   = ${LREPORT} ${YREPORT} ${IREPORT}
 ALLSRC    = ${ETCSRC} ${YSOURCES} ${LSOURCES} ${HSOURCES} ${CSOURCES}
 TESTINS   = ${wildcard test?.in}
 LISTSRC   = ${ALLSRC} ${HYGEN}
-TESTFILES = 
 #
 # Definitions of the compiler and compilation options:
 #
@@ -72,10 +71,6 @@ ${CYGEN} ${HYGEN} : ${YSOURCES}
 #
 # Check sources into an RCS subdirectory.
 #
-ci : ${ALLSRC} ${TESTINS}
-	git add -A #${ALLSRC} ${TESTINS} test?.in
-	git commit
-	git push https://github.com/smorad/cmps104a master
 
 #
 # Make a listing from all of the sources
@@ -90,7 +85,8 @@ lis : ${LISTSRC} tests
 # Clean and spotless remove generated files.
 #
 clean :
-	rm *.o *.str *.tok yylex.cc yyparse.cc *.out *.err *.oc *.pdf *.ps *.output *.html *.lexyacctrace *.oh
+	rm *.o *.str *.tok yylex.cc yyparse.* *.out *.err *.oc *.pdf *.ps\
+	*.output *.html *.lexyacctrace *.oh oc
 #	- rm ${OBJECTS} ${ALLGENS} ${REPORTS} ${DEPSFILE} core
 #	- rm ${foreach test, ${TESTINS:.in=}, \
 #		${patsubst %, ${test}.%, out err}}
@@ -119,9 +115,7 @@ tests : ${EXECBIN}
 	make --no-print-directory ${TESTINS:.in=.out}
 
 test: ${EXECBIN}
-	find \
-	/afs/cats.ucsc.edu/courses/cmps104a-wm/Assignments/oc-programs/\
-	-name '*.oc' | xargs ${EXECBIN};
+	/afs/cats.ucsc.edu/courses/cmps104a-wm/Assignments/grading/mk.tests
 
 %.out %.err : %.in ${EXECBIN}
 	( ${VALGRIND} ${EXECBIN} -ly -@@ $< \

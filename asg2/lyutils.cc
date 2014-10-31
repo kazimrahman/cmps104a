@@ -55,13 +55,11 @@ void scanner_badchar (unsigned char bad) {
    sprintf (char_rep, isgraph ((int) bad) ? "%c" : "\\%03o", bad);
    errprintf ("%:%s: %d: invalid source character (%s)\n",
               included_filenames.back().c_str(), scan_linenr, char_rep);
-    set_exitstatus(1);
 }
 
 void scanner_badtoken (char* lexeme) {
    errprintf ("%:%s: %d: invalid token (%s)\n",
               included_filenames.back().c_str(), scan_linenr, lexeme);
-    set_exitstatus(1);
 }
 
 int yylval_token (int symbol) {
@@ -92,7 +90,7 @@ void scanner_include (void) {
       errprintf ("%: %d: [%s]: invalid directive, ignored\n",
                  scan_rc, yytext);
    }else {
-      printf (";# %d \"%s\"\n", linenr, filename);
+      //fprintf (stderr, ";# %d \"%s\"\n", linenr, filename);
       scanner_newfilename (filename);
       scan_linenr = linenr - 1;
       DEBUGF ('m', "filename=%s, scan_linenr=%d\n",
