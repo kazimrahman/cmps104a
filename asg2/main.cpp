@@ -61,11 +61,13 @@ astree* fill_string_table(char* filename){
     while((token_type = yylex())){
         if (token_type == YYEOF)
             break;
-        if (sscanf(yytext, "# %d \"%[^\"]\"", &scan_linenr, filename) == 2){
+        if (sscanf(yytext, "# %d \"%[^\"]\"", 
+            &scan_linenr, filename) == 2){
             filenr++;
         }
         astree* child = new_astree(
-            token_type, included_filenames.size()-1, scan_linenr, scan_offset, yytext);
+            token_type, included_filenames.size()-1, 
+               scan_linenr, scan_offset, yytext);
         adopt1(root, child);
     }
     return root;
