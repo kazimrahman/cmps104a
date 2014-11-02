@@ -18,6 +18,11 @@ extern int yy_flex_debug;
 extern int yydebug;
 extern int yyleng;
 
+extern int scan_linenr;
+extern int scan_offset;
+
+extern vector<string> included_filenames;
+
 int yylex (void);
 int yyparse (void);
 void yyerror (const char* message);

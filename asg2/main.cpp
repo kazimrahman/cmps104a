@@ -56,31 +56,18 @@ void dump_tokens(astree* root, FILE* fp){
 astree* fill_string_table(char* filename){
     //Reads yyin, fills stringtable and returns an AST root
     unsigned token_type;
-    unsigned linenr = 1;
-    unsigned charnr = 0;
     unsigned filenr = 0;
-    astree* root = new_astree(
-        TOK_ROOT, filenr, linenr, charnr, "root");
+    astree * root = new_parseroot();
     while((token_type = yylex())){
         if (token_type == YYEOF)
             break;
-        if (sscanf(yytext, "# %d \"%[^\"]\"", &linenr, filename) == 2){
+        if (sscanf(yytext, "# %d \"%[^\"]\"", &scan_linenr, filename) == 2){
             filenr++;
         }
         astree* child = new_astree(
-            token_type, filenr, linenr, charnr, yytext);
+            token_type, included_filenames.size()-1, scan_linenr, scan_offset, yytext);
         adopt1(root, child);
-        if (*yytext == '\n'){
-            linenr++;
-            charnr = 0;
-        }
-        else {
-            charnr+= sizeof(*yytext);
-            DEBUGF('a', "%u\n", charnr);
-        }
     }
-    //FILE* fp = fopen(filename, "r");
-    //print_tokens(root, stdout);
     return root;
 }
 
@@ -95,8 +82,8 @@ char* append_extension(char* ocfname, string app_extension){
 
 int main (int argc, char **argv) {
    int c;
-    bool yflag = false;
-    int lflag = 0;
+   bool yflag = false;
+   int lflag = 0;
    string dflag;
    string atflag;
     set_execname(argv[0]);

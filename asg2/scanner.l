@@ -29,11 +29,9 @@ IDENT           ({LETTER}({LETTER}|{DIGIT})*)
 BADIDENT ({NUMBER}+{IDENT})
 CHAR ('([^\\'\n]|\\[\\'"0nt])')
 STRING (\"([^\\"\n]|\\[\\’"0nt])*\")
-ABADSTRING (\"[^\"]*\n|\"[\\"\n]\")
-BBADSTRING (\".\"|\"[^\n\"]*\n)
-CBADSTRING (\"[\\\n']*\")
 BADSTRING (\"[^\n\"\\]*(.|\n))
-BADCHAR ('(.|\n)*')
+ABADCHAR ('(.*)|\n')
+BADCHAR ('[\n\'\\]'|'.[^\'])
 
 %%
 

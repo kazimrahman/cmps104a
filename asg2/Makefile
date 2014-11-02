@@ -85,7 +85,7 @@ lis : ${LISTSRC} tests
 # Clean and spotless remove generated files.
 #
 clean :
-	rm *.o *.str *.tok yylex.cc yyparse.* *.out *.err *.oc *.pdf *.ps\
+	rm *.o *.str *.tok yylex.cc yyparse.* *.out *.err *.oc *.pdf *.ps \
 	*.output *.html *.lexyacctrace *.oh oc
 #	- rm ${OBJECTS} ${ALLGENS} ${REPORTS} ${DEPSFILE} core
 #	- rm ${foreach test, ${TESTINS:.in=}, \
