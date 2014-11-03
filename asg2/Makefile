@@ -118,6 +118,12 @@ test: ${EXECBIN}
 	/afs/cats.ucsc.edu/courses/cmps104a-wm/Assignments/\
 	grading/mk.tests
 
+
+ci: ${HSOURCES} ${CSOURCES} ${LSOURCES} ${YSOURCES}
+	git add ${HSOURCES} ${CSOURCES} ${LSOURCES} ${YSOURCES} Makefile
+	git commit
+	git push https://github.com/smorad/cmps104a
+
 %.out %.err : %.in ${EXECBIN}
 	( ${VALGRIND} ${EXECBIN} -ly -@@ $< \
 	;  echo EXIT STATUS $$? 1>&2 \

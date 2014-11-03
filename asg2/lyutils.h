@@ -22,6 +22,7 @@ extern int scan_linenr;
 extern int scan_offset;
 
 extern vector<string> included_filenames;
+extern FILE* tokfile;
 
 int yylex (void);
 int yyparse (void);
