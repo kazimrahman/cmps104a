@@ -75,7 +75,7 @@ void scanner_badtoken (char* lexeme) {
 
 int yylval_token (int symbol) {
    int offset = scan_offset - yyleng;
-   yylval = new_astree (symbol, included_filenames.size() - 1,
+   yylval = new_astree (symbol, included_filenames.size(),
                         scan_linenr, offset, yytext);
    dump_token(yylval, tokfile);
    return symbol;
