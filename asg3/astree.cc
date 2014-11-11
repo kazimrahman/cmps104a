@@ -29,7 +29,17 @@ astree* new_function (astree* identdecl, astree* paramlist, astree* block){
       identdecl->filenr, 
       identdecl->linenr, 
       identdecl->offset, "");
-   return adopt2(func, paramlist, block);
+   func = adopt2(func, identdecl, paramlist); 
+   return adopt1(func, block);
+
+}
+
+astree* new_proto (astree* identdecl, astree* paramlist){
+   astree* func = new_astree(TOK_PROTOTYPE, 
+      identdecl->filenr, 
+      identdecl->linenr, 
+      identdecl->offset, "");
+   return adopt2(func, identdecl, paramlist); 
 
 }
 

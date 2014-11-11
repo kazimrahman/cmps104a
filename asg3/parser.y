@@ -23,15 +23,16 @@
 %token TOK_POS TOK_NEG TOK_NEWARRAY TOK_TYPEID TOK_FIELD
 %token TOK_ORD TOK_CHR TOK_ROOT
 
-%token TOK_RETURNVOID TOK_PARAMLIST TOK_PROTOTYPE 
+%token TOK_RETURNVOID TOK_PARAMLIST TOK_PROTOTYPE TOK_DECLID
 %token TOK_NEWSTRING TOK_VARDECL TOK_INDEX TOK_FUNCTION
 
-%right TOK_IFELSE 
+%right TOK_IFELSE TOK_IF TOK_ELSE
 %right '=' 
 %left TOK_EQ TOK_NE TOK_LT TOK_LE TOK_GT TOK_GE
 %left '+' '-'
 %left '*' '/' '%'
 %right TOK_ORD TOK_CHR
+%left TOK_ARRAY TOK_FIELD TOK_FUNCTION
 
 %start start
 
@@ -73,15 +74,18 @@ basetype : TOK_VOID        {$$ = $1}
          | TOK_TYPEID      {$$ = $1}
          ;   
 
-function : identdecl paramhead ')' block        {$$ = new_function($1, $2, $4);}
+function : identdecl paramhead ')' block        {free_ast($3);
+                                                $$ = new_function($1, $2, $4);}
+           identdecl paramhead ')' ';'          {
+                                                $$ = new_proto($1, $2);}
          ;
 
 paramhead: paramhead identdecl            {$$ = adopt1($1, $2);}
          | '('                            {$$ = change_sym($1, TOK_PARAMLIST);}
 
 
-identdecl: basetype TOK_ARRAY TOK_IDENT {}
-         | basetype TOK_IDENT           {}
+identdecl: basetype TOK_ARRAY TOK_IDENT {$$ = adopt2($2, $1, $3);}
+         | basetype TOK_IDENT           {$$ = adopt1($1, $2);}
 
 block    : blockhead '}'         {free_ast($2);
                                  change_sym($1, TOK_BLOCK);
@@ -110,12 +114,19 @@ vardecl  : identdecl '=' expr ';'      {free_ast($4);
                                        }
          ;
 
-while    : TOK_WHILE '(' expr ')' statement  {$$ = adopt2($2, $1, $3);}
+while    : whilehead statement  {$$ = adopt1($1, $2);}
          ;
 
-ifelse   : TOK_IF '(' expr ')' statement  {$$ = adopt2($1, $2, $3);}
-         | TOK_IF '(' expr ')' statement TOK_ELSE statement {}
+whilehead: TOK_WHILE '(' expr ')'            {free_ast2($2, $4);
+                                             $$ = adopt1($1, $3);}
+
+ifelse   : ifhead statement            {$$ = adopt1($1, $2);}
+         | ifhead TOK_ELSE statement   {free_ast($2);
+                                       adopt1sym($1, $2, TOK_IFELSE);}
          ;
+
+ifhead   : TOK_IF '(' expr ')'            {free_ast($4);
+                                          $$ = adopt2($1, $2, $3);}
 
 return   : TOK_RETURN expr ';'   {$$ = adopt1($1, $2);}
          | TOK_RETURN ';'        {$$ = adopt1sym(
