@@ -83,9 +83,11 @@ static void dump_node (FILE* outfile, astree* node) {
 //            node, get_yytname (node->symbol), node->symbol,
 //            node->filenr, node->linenr, node->offset,
 //            node->lexinfo->c_str());
+      char* tokname = (char*) get_yytname(node->symbol);
+      tokname += 4;
       fprintf(outfile, 
          "%s \"%s\" %zu.%zu.%zu\n",
-         get_yytname(node->symbol),
+         tokname,
          (node->lexinfo)->c_str(), 
          node->filenr,
          node->linenr,

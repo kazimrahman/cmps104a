@@ -29,6 +29,7 @@ REPORTS   = ${LREPORT} ${YREPORT} ${IREPORT}
 ALLSRC    = ${ETCSRC} ${YSOURCES} ${LSOURCES} ${HSOURCES} ${CSOURCES}
 TESTINS   = ${wildcard test?.in}
 LISTSRC   = ${ALLSRC} ${HYGEN}
+
 #
 # Definitions of the compiler and compilation options:
 #
@@ -109,6 +110,9 @@ ${DEPSFILE} :
 #
 # Test
 #
+#
+submit : 
+	submit cmps104a-wm.f14 asg3 *
 
 tests : ${EXECBIN}
 	touch ${TESTINS}

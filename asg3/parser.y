@@ -31,8 +31,10 @@
 %left TOK_EQ TOK_NE TOK_LT TOK_LE TOK_GT TOK_GE
 %left '+' '-'
 %left '*' '/' '%'
-%right TOK_ORD TOK_CHR
+%right TOK_ORD TOK_CHR TOK_POS TOK_NEG '!'
 %left TOK_ARRAY TOK_FIELD TOK_FUNCTION
+%nonassoc TOK_NEW
+%nonassoc TOK_PARENS
 
 %start start
 
@@ -49,21 +51,28 @@ program  : program structdef     {$$ = adopt1($1, $2)}
          ;
 
 
-structdef: TOK_STRUCT TOK_IDENT '{' structroot '}'     {
-                                                       free_ast2($3, $5);
-                                                       $$ = 
-                                                       adopt1sym($1, $2, TOK_TYPEID);
-                                                       adopt1($1, $4);}
-         ;
+//structdef: TOK_STRUCT TOK_IDENT '{' structroot '}'     {
+//                                                       free_ast2($3, $5);
+//                                                       $$ = 
+//                                                       adopt1sym($1, $2, TOK_TYPEID);
+//                                                       adopt1($1, $4);}
+//         ;
+//
+//structroot  : fielddecl ';'             {free_ast($2); 
+//                                        $$ = $1;}
+//            | structroot fielddecl ';'  {free_ast($3);
+//                                        adopt1($1, $2);}
+//            ;
 
-structroot  : fielddecl ';'             {free_ast($2); 
-                                        $$ = $1;}
-            | structroot fielddecl ';'  {free_ast($3);
-                                        adopt1($1, $2);}
-            ;
+structdef: structdh '}'                        {$$ = $1;}
 
-fielddecl: basetype TOK_ARRAY TOK_FIELD  {$$ = adopt1($2, $1);}
-         | basetype TOK_FIELD            {$$ = adopt1($1, $2);}
+structdh : structdh fielddecl ';'              {free_ast($3);
+                                               $$ = adopt1($1, $2);}
+         | TOK_STRUCT TOK_IDENT '{'            {free_ast($3);
+                                                $$ = adopt1sym($1, $2, TOK_TYPEID);}
+
+fielddecl: basetype TOK_ARRAY TOK_IDENT  {$$ = adopt1sym($2, $1, TOK_FIELD);}
+         | basetype TOK_IDENT            {$$ = adopt1sym($1, $2, TOK_FIELD);}
          ;
 
 basetype : TOK_VOID        {$$ = $1}
@@ -133,13 +142,14 @@ return   : TOK_RETURN expr ';'   {$$ = adopt1($1, $2);}
                                  $1, $2, TOK_RETURNVOID);}
          ;
 
-expr     : binop                 {$$ = $1;}
-         | allocator             {$$ = $1;}
-         | call                  {$$ = $1;}
-         | '(' expr ')'          {free_ast2($1, $3);
-                                 $$ = $1;}
-         | variable              {$$ = $1;}
-         | constant              {$$ = $1;}
+expr     : binop                          {$$ = $1;}
+         | unop                           {$$ = $1;}
+         | allocator %prec TOK_NEW        {$$ = $1;}
+         | call                           {$$ = $1;}
+         | '(' expr ')' %prec TOK_PARENS  {free_ast2($1, $3);
+                                          $$ = $1;}
+         | variable                       {$$ = $1;}
+         | constant                       {$$ = $1;}
          ;
 
 binop    : expr TOK_IFELSE expr  {$$ = adopt2($2, $1, $3);}    
@@ -156,6 +166,11 @@ binop    : expr TOK_IFELSE expr  {$$ = adopt2($2, $1, $3);}
          | expr '%' expr         {$$ = adopt2($2, $1, $3);}
 
 
+unop     : '!' expr              {$$ = adopt1($1, $2);}
+         | '-' expr %prec TOK_NEG          {$$ = adopt1sym($1, $2, TOK_NEG);}
+         | '+' expr %prec TOK_POS         {$$ = adopt1sym($1, $2, TOK_POS);}
+         | TOK_ORD expr          {$$ = adopt1($1, $2);}
+         | TOK_CHAR expr         {$$ = adopt1($1, $2);}
 
 allocator: TOK_NEW TOK_IDENT                 {$$ = adopt1sym(
                                              $1, $2, TOK_TYPEID);}
