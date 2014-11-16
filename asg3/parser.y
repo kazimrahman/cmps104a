@@ -67,12 +67,13 @@ basetype : TOK_VOID        {$$ = $1}
          | TOK_INT         {$$ = $1}
          | TOK_STRING      {$$ = $1}
          | TOK_TYPEID      {$$ = $1}
+         | TOK_IDENT       {$$ = $1}
          ;   
 
 function : identdecl paramhead ')' block        {free_ast($3);
                                                 $$ = new_function($1, $2, $4);}
 
-paramhead: paramhead ',' identdecl        {$$ = adopt1($1, $2);}
+paramhead: paramhead ',' identdecl        {$$ = adopt1($1, $3);}
          | '(' identdecl                  {$$ = adopt1sym($1, $2, TOK_PARAM);}
          | '('                            {$$ = change_sym($1, TOK_PARAM);}
 
@@ -158,7 +159,7 @@ unop     : '!' expr              {$$ = adopt1($1, $2);}
          | TOK_ORD expr          {$$ = adopt1($1, $2);}
          | TOK_CHAR expr         {$$ = adopt1($1, $2);}
 
-allocator: TOK_NEW TOK_IDENT                 {$$ = adopt1sym(
+allocator: TOK_NEW TOK_IDENT '(' ')'         {$$ = adopt1sym(
                                              $1, $2, TOK_TYPEID);}
          | TOK_NEW TOK_STRING '(' expr ')'   {free_ast2($3, $5); 
                                              $$ = adopt1sym(
