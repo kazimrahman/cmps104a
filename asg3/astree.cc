@@ -25,7 +25,8 @@ astree* new_astree (int symbol, int filenr, int linenr, int offset,
    return tree;
 }
 
-astree* new_function (astree* identdecl, astree* paramlist, astree* block){
+astree* new_function (
+      astree* identdecl, astree* paramlist, astree* block){
    if(!string(";").compare(*block->lexinfo))
       return new_proto(identdecl, paramlist);
    astree* func = new_astree(TOK_FUNCTION, 
@@ -67,7 +68,8 @@ astree* adopt1sym (astree* root, astree* child, int symbol) {
    return root;
 }
 
-astree* adopt2sym (astree* root, astree* left, astree* right, int symbol){
+astree* adopt2sym (
+      astree* root, astree* left, astree* right, int symbol){
    left = adopt1(root, left);
    right = adopt1(root, right);
    left->symbol = symbol;
