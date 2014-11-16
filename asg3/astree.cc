@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 
 #include "astree.h"
 #include "stringset.h"
@@ -25,6 +26,8 @@ astree* new_astree (int symbol, int filenr, int linenr, int offset,
 }
 
 astree* new_function (astree* identdecl, astree* paramlist, astree* block){
+   if(!string(";").compare(*block->lexinfo))
+      return new_proto(identdecl, paramlist);
    astree* func = new_astree(TOK_FUNCTION, 
       identdecl->filenr, 
       identdecl->linenr, 
@@ -79,12 +82,10 @@ astree* change_sym (astree* root, int symbol){
 
 
 static void dump_node (FILE* outfile, astree* node) {
-//   fprintf (outfile, "%p->{%s(%d) %ld:%ld.%03ld \"%s\" [",
-//            node, get_yytname (node->symbol), node->symbol,
-//            node->filenr, node->linenr, node->offset,
-//            node->lexinfo->c_str());
       char* tokname = (char*) get_yytname(node->symbol);
-      tokname += 4;
+      //dont want to inc single chars
+      if (strlen(tokname)>3)
+         tokname += 4;
       fprintf(outfile, 
          "%s \"%s\" %zu.%zu.%zu\n",
          tokname,

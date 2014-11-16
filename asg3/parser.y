@@ -23,7 +23,7 @@
 %token TOK_POS TOK_NEG TOK_NEWARRAY TOK_TYPEID TOK_FIELD
 %token TOK_ORD TOK_CHR TOK_ROOT
 
-%token TOK_RETURNVOID TOK_PARAMLIST TOK_PROTOTYPE TOK_DECLID
+%token TOK_RETURNVOID TOK_PARAM TOK_PROTOTYPE TOK_DECLID
 %token TOK_NEWSTRING TOK_VARDECL TOK_INDEX TOK_FUNCTION
 
 %right TOK_IFELSE TOK_IF TOK_ELSE
@@ -50,20 +50,6 @@ program  : program structdef     {$$ = adopt1($1, $2)}
          |                       {$$ = new_parseroot();}
          ;
 
-
-//structdef: TOK_STRUCT TOK_IDENT '{' structroot '}'     {
-//                                                       free_ast2($3, $5);
-//                                                       $$ = 
-//                                                       adopt1sym($1, $2, TOK_TYPEID);
-//                                                       adopt1($1, $4);}
-//         ;
-//
-//structroot  : fielddecl ';'             {free_ast($2); 
-//                                        $$ = $1;}
-//            | structroot fielddecl ';'  {free_ast($3);
-//                                        adopt1($1, $2);}
-//            ;
-
 structdef: structdh '}'                        {$$ = $1;}
 
 structdh : structdh fielddecl ';'              {free_ast($3);
@@ -85,16 +71,15 @@ basetype : TOK_VOID        {$$ = $1}
 
 function : identdecl paramhead ')' block        {free_ast($3);
                                                 $$ = new_function($1, $2, $4);}
-           identdecl paramhead ')' ';'          {
-                                                $$ = new_proto($1, $2);}
-         ;
 
-paramhead: paramhead identdecl            {$$ = adopt1($1, $2);}
-         | '('                            {$$ = change_sym($1, TOK_PARAMLIST);}
+paramhead: paramhead ',' identdecl        {$$ = adopt1($1, $2);}
+         | '(' identdecl                  {$$ = adopt1sym($1, $2, TOK_PARAM);}
+         | '('                            {$$ = change_sym($1, TOK_PARAM);}
 
 
-identdecl: basetype TOK_ARRAY TOK_IDENT {$$ = adopt2($2, $1, $3);}
-         | basetype TOK_IDENT           {$$ = adopt1($1, $2);}
+identdecl: basetype TOK_ARRAY TOK_IDENT {$1 = change_sym($1, TOK_DECLID);
+                                        $$ = adopt2($2, $1, $3);}
+         | basetype TOK_IDENT           {$$ = adopt1sym($1, $2, TOK_DECLID);}
 
 block    : blockhead '}'         {free_ast($2);
                                  change_sym($1, TOK_BLOCK);
@@ -164,6 +149,7 @@ binop    : expr TOK_IFELSE expr  {$$ = adopt2($2, $1, $3);}
          | expr '*' expr         {$$ = adopt2($2, $1, $3);}
          | expr '/' expr         {$$ = adopt2($2, $1, $3);}
          | expr '%' expr         {$$ = adopt2($2, $1, $3);}
+         | expr '=' expr         {$$ = adopt2($2, $1, $3);}
 
 
 unop     : '!' expr              {$$ = adopt1($1, $2);}
@@ -182,15 +168,14 @@ allocator: TOK_NEW TOK_IDENT                 {$$ = adopt1sym(
                                              $1, $2, $4, TOK_NEWARRAY);}
          ;
 
-call     : TOK_IDENT calllist ')'   {free_ast($3);
-                                    adopt1sym($1, $2, TOK_CALL);}
-         | TOK_IDENT '(' ')'        {adopt1sym($1, $2, TOK_VOID);}
+call     : TOK_IDENT '(' ')'        {$$ = adopt1sym($1, $2, TOK_VOID);}
+         | TOK_IDENT callargs ')'   {free_ast($3);
+                                    $$ = adopt1sym($2, $1, TOK_CALL);}
          ;
 
-calllist : '(' expr           {adopt1($1, $2);}
-         | calllist ',' expr  {free_ast($2);
+callargs : '(' expr           {$$ = adopt1($1, $2);}
+         | callargs ',' expr  {free_ast($2);
                               $$ = adopt1($1, $3);}
-         | '('                {$$ = $1;}
          ;
 
 variable : TOK_IDENT             {$$ = $1;} 
