@@ -32,7 +32,7 @@
 %left '+' '-'
 %left '*' '/' '%'
 %right TOK_ORD TOK_CHR TOK_POS TOK_NEG '!'
-%left TOK_ARRAY TOK_FIELD TOK_FUNCTION
+%left TOK_ARRAY TOK_FIELD TOK_FUNCTION '.' '['
 %nonassoc TOK_NEW
 %nonassoc TOK_PARENS
 
@@ -98,7 +98,7 @@ block    : blockhead '}'
          ;
 
 blockhead: blockhead statement   {adopt1($1, $2);}
-         | '{'                   {$$ = $1;}
+         | '{' statement         {$$ = $1;}
 
 statement: block        {$$ = $1}
          | vardecl      {$$ = $1}
@@ -121,7 +121,7 @@ while    : whilehead statement  {$$ = adopt1($1, $2);}
 whilehead: TOK_WHILE '(' expr ')'            {free_ast2($2, $4);
                                              $$ = adopt1($1, $3);}
 
-ifelse   : TOK_IF '(' expr ')' statement 
+ifelse   : TOK_IF '(' expr ')' statement %prec TOK_IF
                {free_ast2($2, $4); $$ = adopt2($1, $3, $5);}
          | TOK_IF '(' expr ')' statement TOK_ELSE statement
                {$1 = adopt1sym($1, $3, TOK_IFELSE); 
@@ -163,7 +163,7 @@ unop     : '!' expr                 {$$ = adopt1($1, $2);}
                {$$ = adopt1sym($1, $2, TOK_NEG);}
          | '+' expr %prec TOK_POS         
                {$$ = adopt1sym($1, $2, TOK_POS);}
-         | TOK_ORD expr          {$$ = adopt1($1, $2);}
+         | TOK_ORD expr         {$$ = adopt1($1, $2);}
          | TOK_CHR expr         {$$ = adopt1($1, $2);}
 
 allocator: TOK_NEW TOK_IDENT '(' ')'         
@@ -177,7 +177,7 @@ allocator: TOK_NEW TOK_IDENT '(' ')'
          ;
 
 call     : TOK_IDENT '(' ')'        
-               {$$ = adopt1sym($1, $2, TOK_VOID);}
+               {$$ = adopt1sym($1, $2, TOK_CALL);}
          | TOK_IDENT callargs ')'   
                {free_ast($3);
                $$ = adopt1sym($2, $1, TOK_CALL);}
@@ -189,10 +189,10 @@ callargs : '(' expr           {$$ = adopt1($1, $2);}
          ;
 
 variable : TOK_IDENT             {$$ = $1;} 
-         | expr '.' expr %prec TOK_FIELD         
+         | expr '.' expr          
                {$3 = change_sym($3, TOK_FIELD);
                $$ = adopt2($2, $1, $3);}
-         | expr '[' expr ']'     
+         | expr '[' expr ']'    
                {$2 = change_sym($2, TOK_INDEX);
                $$ = adopt2($2, $1, $3);}
          ;   
