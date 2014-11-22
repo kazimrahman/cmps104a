@@ -3,7 +3,7 @@
 #include "symtable.h"
 #include <typeinfo>
 #include <iostream>
-#include "yyparse.cc"
+#include "yyparse.h"
 
 size_t symstack::new_block(){
    s.push_front(nullptr);
@@ -54,7 +54,8 @@ void symstack::build_stack_rec(astree* root, int depth){
    //ready your anus
    if (root->symbol == TOK_TYPEID){
       sym *struct_sym = new sym(root);
-      syment symbol_entry = syment(new string(*root->lexinfo, struct_sym));
+      string* lexinfo_str = new string(*root->lexinfo);
+      syment symbol_entry = syment(lexinfo_str, struct_sym);
       struct_table.insert(symbol_entry); 
    }
 
