@@ -2,6 +2,8 @@
 #include <bitset>
 #include <unordered_map>
 #include <vector>
+#include <stack>
+#include "astree.h"
 using namespace std;
 
 enum { ATTR_void, ATTR_bool, ATTR_char, ATTR_int, ATTR_null,
@@ -19,19 +21,22 @@ using symtable = unordered_map<string*, sym*>;
 
 class sym{
    public:
+      sym(astree* ast, size_t blocknr);
       attr_bitset attribute;
       symtable* fields;
       size_t filenr, linenr, offset;
       size_t blocknr;
-      char* lexinfo;
-      vector<sym*>* parameters; 
+      string lexinfo;
+      stack<sym*>* parameters; 
 };
 
+
 class symstack{
-   uint_32 next_block = 1;
-   vector <symtable> s;
-   void insert_sym();
-   syment find_sym();
-   uint_32 new_block();
+   size_t next_block = 1;
+   stack <symtable*> s;
+   void define_ident(astree* ast, size_t blocknr);
+   syment find_ident(string id);
+   size_t new_block();
+   void leave_block();
 
 };
