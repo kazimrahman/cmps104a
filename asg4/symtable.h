@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <stack>
+#include <deque>
 #include "astree.h"
 using namespace std;
 
@@ -22,21 +23,27 @@ using symtable = unordered_map<string*, sym*>;
 class sym{
    public:
       sym(astree* ast, size_t blocknr);
+      //this constructor for structs
+      sym(astree* ast);
       attr_bitset attribute;
       symtable* fields;
       size_t filenr, linenr, offset;
       size_t blocknr;
       string lexinfo;
-      stack<sym*>* parameters; 
+      deque<sym*>* parameters; 
 };
 
+unordered_map<string*, sym*> struct_table;
 
 class symstack{
    size_t next_block = 1;
-   stack <symtable*> s;
+   deque <symtable*> s;
    void define_ident(astree* ast, size_t blocknr);
-   syment find_ident(string id);
+   syment find_ident(string* id);
    size_t new_block();
    void leave_block();
+
+   void build_stack_rec(astree* root, int depth);
+   void build_stack(astree* root);
 
 };
