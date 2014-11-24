@@ -58,32 +58,16 @@ sym::sym(astree* ast){
 
 void symstack::build_stack_rec(astree* root, int depth){
    for(auto child : root->children){
+      printf("Build stack: %s\n", get_yytname(child->symbol));
       build_stack_rec(child, depth+1);
    }
-   //ready your anus
-   //build_sym(root);
-   //typecheck(root);
-}
-
-void symstack::build_stack(astree* root){
-   //build_stack_rec(root, 0);
-   //init our stacks
-//   struct_table.push_front(new symtable);
-//   ident_table.push_front(new symtable);
+   printf("Build sym: %s\n", get_yytname(root->symbol));
    build_sym(root);
 }
 
-//void symstack::typecheck(astree* root){
-//   typecheck_rec(root, 0);
-//}
-//
-//void typecheck_rec(astree* root, int depth){
-//   for(vector<astree*>::iterator child = root->children.begin(); child != root->children.end(); child++){
-//      typecheck_rec(*child, depth+1);
-//   }
-//
-//}
-//
+void symstack::build_stack(astree* root){
+   build_stack_rec(root, 0);
+}
 
 void symstack::node_error(astree* node, string msg){
    fprintf(stderr, "error: %zu %zu %zu: %s", 
@@ -93,34 +77,26 @@ void symstack::node_error(astree* node, string msg){
 
 sym* symstack::build_sym(astree* node){
    sym* symbol;
+   printf("switch: %s\n", get_yytname(node->symbol));
    switch(node->symbol){
       case TOK_ROOT:
-         for(auto child : node->children)
-            build_sym(child);
+         //for(auto child : node->children)
+         //   build_sym(child);
          break;
-      case TOK_VOID:
+//      case TOK_VOID:
       case TOK_BOOL:
       case TOK_CHAR:
       case TOK_INT:
       case TOK_NULL:
       case TOK_STRING:
          {
-            symbol = type_var(node, node->symbol);
+            //symbol = type_var(node);
+            type_var(node);
             //string* lexinfo_str = new string(*node->children[0]->lexinfo);
-            syment* symbol_entry = new syment(const_cast<string*>(node->children[0]->lexinfo), symbol);
-            ident_table.front()->insert(*symbol_entry);
-            define_ident(node->children[0]);
             break;
          }
       case TOK_TYPEID:
          {
-            //struct decl
-            //insert struct type into typetable
-            symbol = new sym(node);
-            string* lexinfo_str = new string(*node->children[0]->lexinfo);
-            syment symbol_entry = syment(lexinfo_str, symbol);
-            type_table->insert(symbol_entry); 
-            //insert fields into struct_table
             break;
          }
       case TOK_DECLID:
@@ -130,14 +106,17 @@ sym* symstack::build_sym(astree* node){
                symbol = entry;
             }
             else{
-               define_ident(node->children[0]);
+               define_ident(node);
             }
             break;
          }
       case TOK_VARDECL:
          {
             symbol = find_ident(node->lexinfo);
-            if (symbol != nullptr){
+            if (symbol == nullptr){
+               define_ident(node->children[0]);
+            }
+            else{
                node_error(node, "Duplicate variable declaration");
             }
          }
@@ -169,43 +148,50 @@ sym* symstack::build_sym(astree* node){
    return symbol;
 }
 
-sym* symstack::type_var(astree* node, int tokid){
-   sym* symbol = new sym(node, next_block);
-   switch(tokid){
+void symstack::type_var(astree* node){
+   switch(node->symbol){
       case TOK_VOID:
-         symbol->attribute = ATTR_void;
+         node->attr.set(ATTR_void);
+			break;
       case TOK_BOOL:
-         symbol->attribute = ATTR_bool;
+         node->attr.set(ATTR_bool);
+			break;
       case TOK_CHAR:
-         symbol->attribute = ATTR_char;
+         node->attr.set(ATTR_char);
+			break;
       case TOK_INT:
-         symbol->attribute = ATTR_int;
+         node->attr.set(ATTR_int);
+			break;
       case TOK_NULL:
-         symbol->attribute = ATTR_null;
+         node->attr.set(ATTR_null);
+			break;
       case TOK_STRING:
-         symbol->attribute = ATTR_string;
+         node->attr.set(ATTR_string);
+			break;
       case TOK_STRUCT:
-         symbol->attribute = ATTR_struct;
+         node->attr.set(ATTR_struct);
+			break;
       case TOK_ARRAY:
-         symbol->attribute = ATTR_array;
+         node->attr.set(ATTR_array);
+			break;
       case TOK_FUNCTION:
-         symbol->attribute = ATTR_function;
+         node->attr.set(ATTR_function);
+			break;
 //      case TOK_VAR:
-//         symbol->attribute = ATTR_variable;
+//         node->attr.set(ATTR_variable;
+//			break;
       case TOK_FIELD:
-         symbol->attribute = ATTR_field;
+         node->attr.set(ATTR_field);
+			break;
       case TOK_TYPEID:
-         symbol->attribute = ATTR_typeid;
+         node->attr.set(ATTR_typeid);
+			break;
       case TOK_PARAM:
-         symbol->attribute = ATTR_param;
+         node->attr.set(ATTR_param);
+			break;
       default: 
-         fprintf(stderr, "No attribute assigned to token %s\n", get_yytname(tokid));
-
-      string* lexinfo_str = new string(*node->children[0]->lexinfo);
-      syment symbol_entry = syment(lexinfo_str, symbol);
-      ident_table.front()->insert(symbol_entry); 
-      
-      return symbol;
+         fprintf(stderr, "No attribute assigned to token %s\n", get_yytname(node->symbol));
+			break;
    }
 }
 
