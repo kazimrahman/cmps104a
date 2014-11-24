@@ -22,6 +22,7 @@ astree* new_astree (int symbol, int filenr, int linenr, int offset,
    DEBUGF ('f', "astree %p->{%d:%d.%d: %s: \"%s\"}\n",
            tree, tree->filenr, tree->linenr, tree->offset,
            get_yytname (tree->symbol), tree->lexinfo->c_str());
+   tree->blocknr = -1;
    return tree;
 }
 

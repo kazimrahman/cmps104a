@@ -3,34 +3,41 @@
 #include "symtable.h"
 #include <typeinfo>
 #include <iostream>
-#include "yyparse.h"
+#include "lyutils.h"
 
-size_t symstack::new_block(){
+void symstack::new_block(astree* node){
    ident_table.push_front(nullptr);
-   return next_block++;
+   block_stack.push(++next_block);
+   node->blocknr = next_block;
 }
 
 void symstack::leave_block(){
    ident_table.pop_front();
+   block_stack.pop();
 }
 
-void symstack::define_ident(astree* ast, size_t blocknr){
+sym* symstack::define_ident(astree* ast){
    if (ident_table.front() == nullptr){
       ident_table.push_front(new symtable);
    }
-   sym* symbol = new sym(ast, blocknr);
+   sym* symbol = new sym(ast, next_block);
    syment sym_entry = syment(const_cast<string*>(ast->lexinfo), symbol);
    ident_table.front()->insert(sym_entry);
+   return symbol;
 }
 
-syment symstack::find_ident(string* id){
-   for(auto iter = ident_table.begin(); iter != ident_table.end(); iter++){
-      if((*iter)->count(id)){
-         //find returns an iterator not the actual object
-         return *(*iter)->find(id);
+sym* symstack::find_ident(const string* id){
+   std::cout<<"FINDING "<<id<<std::endl;
+   string* s = const_cast<string*>(id);
+   for(auto table : ident_table){
+      //might be in a new block, in which case stack top will be null
+      if(table == nullptr) continue;
+      std::cout<<"ITER "<<table<<std::endl;
+      if(table->count(s)){
+         return table->at(s);
       }
    }
-   return syment (nullptr, nullptr);
+   return nullptr;
 }
 
 sym::sym(astree* ast, size_t blocknr){
@@ -50,16 +57,20 @@ sym::sym(astree* ast){
 }
 
 void symstack::build_stack_rec(astree* root, int depth){
-   for(vector<astree*>::iterator child = root->children.begin(); child != root->children.end(); child++){
-      build_stack_rec(*child, depth+1);
+   for(auto child : root->children){
+      build_stack_rec(child, depth+1);
    }
    //ready your anus
-   build_sym(root);
-   typecheck(root);
+   //build_sym(root);
+   //typecheck(root);
 }
 
 void symstack::build_stack(astree* root){
-   build_stack_rec(root, 0);
+   //build_stack_rec(root, 0);
+   //init our stacks
+//   struct_table.push_front(new symtable);
+//   ident_table.push_front(new symtable);
+   build_sym(root);
 }
 
 //void symstack::typecheck(astree* root){
@@ -72,17 +83,35 @@ void symstack::build_stack(astree* root){
 //   }
 //
 //}
+//
+
+void symstack::node_error(astree* node, string msg){
+   fprintf(stderr, "error: %zu %zu %zu: %s", 
+      node->filenr, node->linenr, node->offset, msg.c_str());
+   set_exitstatus(4);
+}
 
 sym* symstack::build_sym(astree* node){
    sym* symbol;
    switch(node->symbol){
+      case TOK_ROOT:
+         for(auto child : node->children)
+            build_sym(child);
+         break;
       case TOK_VOID:
       case TOK_BOOL:
       case TOK_CHAR:
       case TOK_INT:
       case TOK_NULL:
       case TOK_STRING:
-         symbol = type_var(node, node->symbol);
+         {
+            symbol = type_var(node, node->symbol);
+            //string* lexinfo_str = new string(*node->children[0]->lexinfo);
+            syment* symbol_entry = new syment(const_cast<string*>(node->children[0]->lexinfo), symbol);
+            ident_table.front()->insert(*symbol_entry);
+            define_ident(node->children[0]);
+            break;
+         }
       case TOK_TYPEID:
          {
             //struct decl
@@ -94,20 +123,47 @@ sym* symstack::build_sym(astree* node){
             //insert fields into struct_table
             break;
          }
+      case TOK_DECLID:
+         {
+            sym* entry = find_ident(node->lexinfo);
+            if(entry){
+               symbol = entry;
+            }
+            else{
+               define_ident(node->children[0]);
+            }
+            break;
+         }
+      case TOK_VARDECL:
+         {
+            symbol = find_ident(node->lexinfo);
+            if (symbol != nullptr){
+               node_error(node, "Duplicate variable declaration");
+            }
+         }
       case TOK_PROTOTYPE:
       case TOK_FUNCTION:
          {
-            new_block();
+            new_block(node);
             symbol = new sym(node, next_block);
-            for(auto child = node->children.begin(); child != node->children.end(); child++){
-               symbol->parameters->push_back(build_sym(*child));
+            for(auto child : node->children){
+               symbol->parameters->push_back(build_sym(child));
             }
             leave_block();
             break;
          }
 
+      case TOK_BLOCK:
+         {
+            new_block(node);
+            for(auto child : node->children)
+               build_sym(child);
+            leave_block();
+            break;
+         }
+            
       default:
-         fprintf(stderr, "Unkown token %d\n", node->symbol);
+         fprintf(stderr, "Unkown token %s\n", get_yytname(node->symbol));
          break;
    }
    return symbol;
@@ -143,7 +199,7 @@ sym* symstack::type_var(astree* node, int tokid){
       case TOK_PARAM:
          symbol->attribute = ATTR_param;
       default: 
-         fprintf(stderr, "No attribute assigned to tokid %d\n", tokid);
+         fprintf(stderr, "No attribute assigned to token %s\n", get_yytname(tokid));
 
       string* lexinfo_str = new string(*node->children[0]->lexinfo);
       syment symbol_entry = syment(lexinfo_str, symbol);
@@ -151,4 +207,8 @@ sym* symstack::type_var(astree* node, int tokid){
       
       return symbol;
    }
+}
+
+void symstack::dump_stack(FILE* out){
+   fprintf(out, "Output\n");
 }

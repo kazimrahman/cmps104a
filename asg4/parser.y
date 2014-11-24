@@ -82,10 +82,11 @@ paramhead: paramhead ',' identdecl {$$ = adopt1($1, $3);}
                {$$ = change_sym($1, TOK_PARAM);}
 
 identdecl: basetype TOK_ARRAY TOK_IDENT 
-               {$1 = change_sym($1, TOK_DECLID);
+               {$1 = change_sym($3, TOK_DECLID);
                $$ = adopt2($2, $1, $3);}
          | basetype TOK_IDENT           
-               {$$ = adopt1sym($1, $2, TOK_DECLID);}
+               {$2 = change_sym($2, TOK_DECLID);
+               $$ = adopt1($1, $2);}
          ;
 
 block    : blockhead '}'         

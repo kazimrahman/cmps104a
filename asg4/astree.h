@@ -14,6 +14,7 @@ struct astree {
    size_t offset;            // offset of token with current line
    const string* lexinfo;    // pointer to lexical information
    vector<astree*> children; // children of this n-way node
+   int blocknr;
 };
 
 
