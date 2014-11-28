@@ -4,17 +4,20 @@
 #include <string>
 #include <vector>
 #include <bitset>
+#include <unordered_map>
 using namespace std;
 
 #include "auxlib.h"
+struct symbol;
+using symbol_table = unordered_map<string*,symbol*>;
 
-
-enum { ATTR_void, ATTR_bool, ATTR_char, ATTR_int, ATTR_null,
-ATTR_string, ATTR_struct, ATTR_array, ATTR_function,
-ATTR_variable, ATTR_field, ATTR_typeid, ATTR_param, ATTR_lval,
-ATTR_const, ATTR_vreg, ATTR_vaddr, ATTR_bitset_size,
+enum { attr_void, attr_bool, attr_char, attr_int, attr_null,
+attr_string, attr_struct, attr_array, attr_function,
+attr_variable, attr_field, attr_typeid, attr_param, attr_lval,
+attr_const, attr_vreg, attr_vaddr, attr_bitset_size,
 };
-using attr_bitset = bitset <ATTR_bitset_size>;
+
+using attr_bitset = bitset<attr_bitset_size>;
 
 struct astree {
    int symbol;               // token code
@@ -23,8 +26,9 @@ struct astree {
    size_t offset;            // offset of token with current line
    const string* lexinfo;    // pointer to lexical information
    vector<astree*> children; // children of this n-way node
-   int blocknr;
+   size_t blocknr;
    attr_bitset attr;
+   symbol_table* struct_table;
 };
 
 

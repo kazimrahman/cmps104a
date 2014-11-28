@@ -19,11 +19,12 @@ astree* new_astree (int symbol, int filenr, int linenr, int offset,
    tree->linenr = linenr;
    tree->offset = offset;
    tree->lexinfo = intern_stringset (lexinfo);
+   tree->blocknr = 0;
+   tree->attr = 0;
+   tree->struct_table = nullptr;
    DEBUGF ('f', "astree %p->{%d:%d.%d: %s: \"%s\"}\n",
            tree, tree->filenr, tree->linenr, tree->offset,
            get_yytname (tree->symbol), tree->lexinfo->c_str());
-   tree->blocknr = -1;
-   tree->attr = NULL;
    return tree;
 }
 
@@ -84,6 +85,41 @@ astree* change_sym (astree* root, int symbol){
    return root;
 }
 
+static string enum_tostring(size_t i){
+   switch(i){
+   case 0: return "attr_void";
+   case 1: return "attr_bool";
+   case 2: return "attr_char";
+   case 3: return "attr_int";
+   case 4: return "attr_null";
+   case 5: return "attr_string";
+   case 6: return "attr_struct";
+   case 7: return "attr_array";
+   case 8: return "attr_function";
+   case 9: return "attr_variable";
+   case 10: return "attr_field";
+   case 11: return "attr_typeid";
+   case 12: return "attr_param";
+   case 13: return "attr_lval";
+   case 14: return "attr_const";
+   case 15: return "attr_vreg";
+   case 16: return "attr_vaddr";
+   case 17: return "attr_bitset_size";
+   }
+   return "invalid_enum";
+}
+
+static string enum_bitset(attr_bitset a){
+   string buf;
+   for(int i=0; i<attr_bitset_size; ++i){
+      if(a[i]){
+         buf += enum_tostring(i);
+         buf += " ";
+      }
+   }
+   return buf;
+}
+
 
 static void dump_node (FILE* outfile, astree* node) {
       char* tokname = (char*) get_yytname(node->symbol);
@@ -91,12 +127,15 @@ static void dump_node (FILE* outfile, astree* node) {
       if (strlen(tokname)>3)
          tokname += 4;
       fprintf(outfile, 
-         "%s \"%s\" %zu.%zu.%zu\n",
+         "%s \"%s\" %zu.%zu.%zu {%zu} %s\n",
          tokname,
          (node->lexinfo)->c_str(), 
          node->filenr,
          node->linenr,
-         node->offset);
+         node->offset,
+         node->blocknr,
+         enum_bitset(node->attr).c_str()
+         );
 }
 
 static void dump_astree_rec (FILE* outfile, astree* root, int depth) {

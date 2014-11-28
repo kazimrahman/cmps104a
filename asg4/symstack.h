@@ -1,0 +1,13 @@
+//extern size_t next_block;
+#include "symtable.h"
+extern size_t next_block;
+class symbol_stack{
+   public:
+      vector<symbol_table*> stack;
+      void enter_block();
+
+      void leave_block();
+
+      void define_ident(astree* node);
+      symbol* lookup_ident(astree* node);
+};

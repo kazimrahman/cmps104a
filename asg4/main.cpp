@@ -14,10 +14,11 @@ using namespace std;
 #include "stringset.h"
 #include "auxlib.h"
 #include "astree.h"
-#include "symtable.h"
+#include "symstack.h"
+#include "typecheck.h"
 
 #define BUFSIZE 4096
-
+size_t next_block = 1;
 
 /*Returns a pipe to a preprocessor which has been fed ocfname*/
 FILE* preprocess(string ocfname, string options){
@@ -30,6 +31,15 @@ FILE* preprocess(string ocfname, string options){
    //read in code and run preprocessor
    return(popen(cmd.c_str(), "r"));
    
+}
+
+void fill_string_table(){
+    //Reads yyin, fills stringtable
+    unsigned token_type;
+    while((token_type = yylex())){
+        if (token_type == YYEOF)
+            break;
+    }
 }
 
 char* append_extension(char* ocfname, string app_extension){
@@ -84,7 +94,6 @@ int main (int argc, char **argv) {
    char* str_fname = append_extension(ocfname, ".str");
    char* tok_fname = append_extension(ocfname, ".tok");
    char* ast_fname = append_extension(ocfname, ".ast");
-   char* sym_fname = append_extension(ocfname, ".sym");
 
    //Dump str to file
    FILE* strfile = fopen(str_fname, "w");
@@ -96,13 +105,11 @@ int main (int argc, char **argv) {
    yyparse();
    fclose(yyin);
    dump_stringset(strfile);
+   symbol_stack s;
+   type_check(yyparse_astree, s);
    dump_astree(astfile, yyparse_astree);
    fclose(strfile);
    fclose(tokfile);
    fclose(astfile);
-   
-   symstack s;
-   s.build_stack(yyparse_astree);
-
    return get_exitstatus();
 }

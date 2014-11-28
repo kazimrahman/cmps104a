@@ -1,55 +1,24 @@
-#include <cstdlib>
-#include <bitset>
-#include <unordered_map>
 #include <vector>
-#include <stack>
-#include <deque>
+#include <unordered_map>
+#include <string>
+#include <utility>
+#include <bitset>
 #include "astree.h"
-using namespace std;
 
-class sym;
+struct symbol;
 
-using syment = pair<string*,sym*>;
-using symtable = unordered_map<string*, sym*>;
+using symbol_table = unordered_map<string*,symbol*>;
+using symbol_entry = pair<string*,symbol*>;
 
-
-class sym{
-   public:
-      sym(astree* ast, size_t blocknr);
-      //this constructor for structs
-      sym(astree* ast);
-      attr_bitset attribute;
-      symtable* fields;
-      size_t filenr, linenr, offset;
-      size_t blocknr;
-      deque<sym*>* parameters; 
+struct symbol{
+   attr_bitset attr;
+   symbol_table* fields;
+   size_t filenr, linenr, offset;
+   size_t blocknr;
+   vector<symbol*>* parameters;
 };
 
-class symstack{
-   public:
-      void build_stack(astree* root);
-      void dump_stack(FILE* out);
-   private:
-      size_t next_block = 1;
-      stack <int> block_stack;
-      deque <symtable*> struct_table;
-      deque <symtable*> ident_table;
-      symtable* type_table;
+symbol* new_symbol(astree* node);
+void st_insert(symbol_table st, astree* node);
+symbol* st_lookup(symbol_table st, astree* node);
 
-      sym* define_ident(astree* ast);
-      sym* find_ident(const string* id);
-      void new_block(astree* node);
-      void leave_block();
-
-      void build_stack_rec(astree* root, int depth);
-      
-      //changes exitval
-      void typecheck(astree* node);
-      //for simple token typing
-      void type_var(astree* node);
-      
-      //does the right thing with each token type
-      sym* build_sym(astree* node);
-      void node_error(astree* node, string msg);
-
-};

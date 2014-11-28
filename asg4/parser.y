@@ -52,7 +52,8 @@ structdef: structdh '}'          {$$ = $1;}
 structdh : structdh fielddecl ';'
                {free_ast($3); $$ = adopt1($1, $2);}
          | TOK_STRUCT TOK_IDENT '{'            
-               {free_ast($3); $$ = adopt1sym($1, $2, TOK_TYPEID);}
+               {free_ast($3); $2 = change_sym($2, TOK_TYPEID);
+               $$ = adopt1($1, $2);}
 
 fielddecl: basetype TOK_ARRAY TOK_IDENT  
                {$$ = adopt1sym($2, $1, TOK_FIELD);}
