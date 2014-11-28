@@ -21,13 +21,20 @@ bool compare_ref(astree* left, astree* right){
 
 void adopt_type(astree* parent, astree* child){
    for(size_t i=0; i < attr_function; ++i){
-      if(parent->attr[i])
-         child->attr[i] = 1;   
+      if(child->attr[i])
+         parent->attr[i] = 1;   
+   }
+}
+
+void adopt_attrs(astree* parent, astree* child){
+   for(size_t i=0; i < attr_bitset_size; ++i){
+      if(child->attr[i])
+         parent->attr[i] = 1;   
    }
 }
 
 
-void type_check_body(astree* node, symbol_stack s, size_t depth){
+void type_check_body(astree* node, symbol_stack s, symbol_table type_table, size_t depth){
    astree* lchild = nullptr;
    astree* rchild = nullptr;
    symbol *sym;
@@ -36,12 +43,35 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
    if(node->children.size() >= 2)
       rchild = node->children[1];
    switch(node->symbol){
+      case TOK_DECLID:
+         break;
+      case TOK_INT:
+         lchild->attr[attr_int] = 1;
+         adopt_attrs(node, lchild);
+         break;
+      case TOK_CHAR:
+         lchild->attr[attr_char] = 1;
+         adopt_attrs(node, lchild);
+         break;
+      case TOK_STRING:
+         lchild->attr[attr_char] = 1;
+         adopt_attrs(node, lchild);
+         break;
+      case TOK_VARDECL:
+         lchild->children[0]->attr[attr_lval] = 1;
+         if(s.lookup_ident(lchild->children[0]))
+            errprintf("Error %d %d %d: Duplicate declaration %s\n", node->filenr, node->linenr, node->offset, lchild->children[0]->lexinfo->c_str());
+         s.define_ident(lchild->children[0]);
+         break;
       case TOK_IDENT:
          sym = s.lookup_ident(node);
          if(sym == nullptr)
-            errprintf("Error %d %d %d: Reference to undefined variable", node->filenr, node->linenr, node->offset);
+            errprintf("Error %d %d %d: Reference to undefined variable %s\n", node->filenr, node->linenr, node->offset, node->lexinfo->c_str());
          break;
       case TOK_STRUCT:
+         {
+            
+         }
          break;
       case TOK_LT:
       case TOK_LE:
@@ -54,7 +84,7 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
                node->attr.set(attr_bool);
                return;
             }
-            errprintf("Error %d %d %d: Invalid types", node->filenr, node->linenr, node->offset);
+            errprintf("Error %d %d %d: Invalid types\n", node->filenr, node->linenr, node->offset);
             break;
          }
       case TOK_NE:
@@ -65,7 +95,7 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
                node->attr[attr_vreg] = 1;
                return;
             }
-            errprintf("Error %d %d %d: Invalid types", node->filenr, node->linenr, node->offset);
+            errprintf("Error %d %d %d: Invalid types\n", node->filenr, node->linenr, node->offset);
             break;
          }
       case '=':
@@ -75,7 +105,7 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
                node->attr[attr_vreg] = 1;
                return;
             }
-            errprintf("Error %d %d %d: Invalid types", node->filenr, node->linenr, node->offset);
+            errprintf("Error %d %d %d: Invalid types\n", node->filenr, node->linenr, node->offset);
             break;
          }
       case '+':
@@ -86,12 +116,12 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
             if(rchild == nullptr){
                //unary operator
                if(lchild->symbol != TOK_INT){
-                  errprintf("Error %d %d %d: Non int arithmetic operator", node->filenr, node->linenr, node->offset);
+                  errprintf("Error %d %d %d: Non int arithmetic operator\n", node->filenr, node->linenr, node->offset);
                }
             }
             else{
                if(!(lchild->symbol == TOK_INT && rchild->symbol == TOK_INT)){
-                  errprintf("Error %d %d %d: Non int arithmetic operator", node->filenr, node->linenr, node->offset);
+                  errprintf("Error %d %d %d: Non int arithmetic operator\n", node->filenr, node->linenr, node->offset);
                }
             }
                break;
@@ -103,7 +133,7 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
             node->attr[attr_vreg] = 1;
             node->attr[attr_int] = 1;
             if(!(lchild->symbol == TOK_INT && rchild->symbol == TOK_INT)){
-               errprintf("Error %d %d %d: Non int with arithmetic operator", node->filenr, node->linenr, node->offset);
+               errprintf("Error %d %d %d: Non int with arithmetic operator\n", node->filenr, node->linenr, node->offset);
             }
             break;
          }
@@ -111,14 +141,14 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
          node->attr[attr_bool] = 1;
          node->attr[attr_vreg] = 1;
          if(!(lchild->symbol == TOK_TRUE || lchild->symbol == TOK_FALSE)){
-            errprintf("Error %d %d %d: Non bool with bool operator", node->filenr, node->linenr, node->offset);
+            errprintf("Error %d %d %d: Non bool with bool operator\n", node->filenr, node->linenr, node->offset);
          }
          break;
       case TOK_ORD:
          node->attr[attr_vreg] = 1;
          node->attr[attr_char] = 1;
          if(lchild->symbol != TOK_INT) 
-            errprintf("Error %d %d %d: Cannot make non int type into ord", node->filenr, node->linenr, node->offset);
+            errprintf("Error %d %d %d: Cannot make non int type into ord\n", node->filenr, node->linenr, node->offset);
          break;
       //NEED TO DO TYPEIDS AND STRINGS AND ARRAYS
       case TOK_INTCON:
@@ -145,7 +175,7 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
       case TOK_WHILE:
       case TOK_IF:
          if(!lchild->attr[attr_bool])
-            errprintf("Error %d %d %d: If or while must be bool", node->filenr, node->linenr, node->offset);
+            errprintf("Error %d %d %d: If or while must be bool\n", node->filenr, node->linenr, node->offset);
       default:
          errprintf("Invalid symbol %s\n", get_yytname(node->symbol));
          
@@ -153,13 +183,13 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
    
 }
 
-void type_check_rec(astree* root, symbol_stack s, size_t depth){
+void type_check_rec(astree* root, symbol_stack s, symbol_table type_table, size_t depth){
    for(auto child : root->children){
-      type_check_rec(child, s, depth+1);
+      type_check_rec(child, s, type_table, depth+1);
    }
-   type_check_body(root, s, depth);
+   type_check_body(root, s, type_table, depth);
 }
 
-void type_check(astree* root, symbol_stack s){
-   type_check_rec(root, s, 0);
+void type_check(astree* root, symbol_stack s, symbol_table type_table){
+   type_check_rec(root, s, type_table, 0);
 }

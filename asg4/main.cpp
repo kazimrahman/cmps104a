@@ -106,7 +106,10 @@ int main (int argc, char **argv) {
    fclose(yyin);
    dump_stringset(strfile);
    symbol_stack s;
-   type_check(yyparse_astree, s);
+   symbol_table type_table;
+   s.stack.push_back(new symbol_table);
+   type_check(yyparse_astree, s, type_table);
+   s.dump();
    dump_astree(astfile, yyparse_astree);
    fclose(strfile);
    fclose(tokfile);

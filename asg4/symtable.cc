@@ -1,4 +1,5 @@
 #include "symtable.h"
+#include <iostream>
 #include "astree.h"
 
 symbol* new_symbol(astree* node){
@@ -9,16 +10,23 @@ symbol* new_symbol(astree* node){
    return sym;
 }
 
-void st_insert(symbol_table st, astree* node){
+void st_insert(symbol_table* st, astree* node){
    symbol* sym = new_symbol(node);
    symbol_entry ent = symbol_entry(const_cast<string*>(node->lexinfo), sym);
-   st.insert(ent);
+   st->insert(ent);
 }
 
-symbol* st_lookup(symbol_table st, astree* node){
+symbol* st_lookup(symbol_table* st, astree* node){
    string* lexinfo = const_cast<string*>(node->lexinfo);
-   if(st.count(lexinfo))
+   if(!st->count(lexinfo))
       return nullptr;
-   symbol_entry ent = *st.find(lexinfo);
+   symbol_entry ent = *st->find(const_cast<string*>(node->lexinfo));
    return ent.second;
+}
+
+void dump(symbol_table* st){
+   cout<<"\tTable size: "<<st->size()<<endl;
+   for(auto iter = st->begin(); iter != st->end(); iter++){
+      cout<<"\tEntry 1: "<<(*iter).first<<endl;
+   }
 }

@@ -56,9 +56,11 @@ structdh : structdh fielddecl ';'
                $$ = adopt1($1, $2);}
 
 fielddecl: basetype TOK_ARRAY TOK_IDENT  
-               {$$ = adopt1sym($2, $1, TOK_FIELD);}
+               {$3 = change_sym($3, TOK_FIELD);
+               $$ = adopt1($2, $1);}
          | basetype TOK_IDENT            
-             {$$ = adopt1sym($1, $2, TOK_FIELD);}
+             {$2 = change_sym($2, TOK_FIELD); 
+             $$ = adopt1($1, $2);}
          ;
 
 basetype : TOK_VOID        {$$ = $1}
