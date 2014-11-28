@@ -1,5 +1,4 @@
 #include "symstack.h"
-
 void symbol_stack::enter_block(){
    ++next_block;
    stack.push_back(nullptr);

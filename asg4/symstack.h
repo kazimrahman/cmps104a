@@ -1,4 +1,5 @@
-//extern size_t next_block;
+#ifndef __symtable_h
+#define __symtable_h
 #include "symtable.h"
 extern size_t next_block;
 class symbol_stack{
@@ -11,3 +12,4 @@ class symbol_stack{
       void define_ident(astree* node);
       symbol* lookup_ident(astree* node);
 };
+#endif

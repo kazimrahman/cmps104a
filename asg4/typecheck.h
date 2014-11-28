@@ -1,4 +1,4 @@
-#include "astree.h"
+//#include "astree.h"
 #include "auxlib.h"
 #include "lyutils.h"
 class symbol_stack;

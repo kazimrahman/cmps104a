@@ -4,7 +4,6 @@
 #include <utility>
 #include <bitset>
 #include "astree.h"
-
 struct symbol;
 
 using symbol_table = unordered_map<string*,symbol*>;
@@ -21,4 +20,3 @@ struct symbol{
 symbol* new_symbol(astree* node);
 void st_insert(symbol_table st, astree* node);
 symbol* st_lookup(symbol_table st, astree* node);
-

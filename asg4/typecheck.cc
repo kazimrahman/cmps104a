@@ -144,7 +144,7 @@ void type_check_body(astree* node, symbol_stack s, size_t depth){
          break;
       case TOK_WHILE:
       case TOK_IF:
-         if(!node->child[0]->attr[attr_bool])
+         if(!lchild->attr[attr_bool])
             errprintf("Error %d %d %d: If or while must be bool", node->filenr, node->linenr, node->offset);
       default:
          errprintf("Invalid symbol %s\n", get_yytname(node->symbol));
