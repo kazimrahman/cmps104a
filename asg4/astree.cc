@@ -87,24 +87,24 @@ astree* change_sym (astree* root, int symbol){
 
 static string enum_tostring(size_t i){
    switch(i){
-   case 0: return "attr_void";
-   case 1: return "attr_bool";
-   case 2: return "attr_char";
-   case 3: return "attr_int";
-   case 4: return "attr_null";
-   case 5: return "attr_string";
-   case 6: return "attr_struct";
-   case 7: return "attr_array";
-   case 8: return "attr_function";
-   case 9: return "attr_variable";
-   case 10: return "attr_field";
-   case 11: return "attr_typeid";
-   case 12: return "attr_param";
-   case 13: return "attr_lval";
-   case 14: return "attr_const";
-   case 15: return "attr_vreg";
-   case 16: return "attr_vaddr";
-   case 17: return "attr_bitset_size";
+   case 0: return "void";
+   case 1: return "bool";
+   case 2: return "char";
+   case 3: return "int";
+   case 4: return "null";
+   case 5: return "string";
+   case 6: return "struct";
+   case 7: return "array";
+   case 8: return "function";
+   case 9: return "variable";
+   case 10: return "field";
+   case 11: return "typeid";
+   case 12: return "param";
+   case 13: return "lval";
+   case 14: return "const";
+   case 15: return "vreg";
+   case 16: return "vaddr";
+   case 17: return "bitset_size";
    }
    return "invalid_enum";
 }
@@ -127,7 +127,7 @@ static void dump_node (FILE* outfile, astree* node) {
       if (strlen(tokname)>3)
          tokname += 4;
       fprintf(outfile, 
-         "%s \"%s\" %zu.%zu.%zu {%zu} %s\n",
+         "%s \"%s\" (%zu.%zu.%zu) {%zu} %s",
          tokname,
          (node->lexinfo)->c_str(), 
          node->filenr,
@@ -136,6 +136,15 @@ static void dump_node (FILE* outfile, astree* node) {
          node->blocknr,
          enum_bitset(node->attr).c_str()
          );
+      if(node->symbol == TOK_IDENT){
+//         symbol* sym = s.lookup(node);
+//         fprintf(outfile, "(%zu.%zu.%zu)"
+//         sym->filenr,
+//         sym->linenr,
+//         sym->offset);
+
+      }
+      fprintf(outfile, "\n");
 }
 
 static void dump_astree_rec (FILE* outfile, astree* root, int depth) {

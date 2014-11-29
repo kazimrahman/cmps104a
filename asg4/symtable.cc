@@ -7,6 +7,8 @@ symbol* new_symbol(astree* node){
    sym->filenr = node->filenr;
    sym->linenr = node->linenr;
    sym->blocknr = node->blocknr;
+   sym->attr = node->attr;
+   sym->parameters = nullptr;
    return sym;
 }
 

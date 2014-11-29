@@ -33,8 +33,44 @@ void adopt_attrs(astree* parent, astree* child){
    }
 }
 
+void block_recurse(astree* node, symbol_stack* s){
+   if(node->symbol == TOK_BLOCK)
+      s->enter_block();
+   node->blocknr = next_block;
+   for(auto child : node->children){
+      block_recurse(child, s);
+   }
+}
 
-void type_check_body(astree* node, symbol_stack s, symbol_table type_table, size_t depth){
+void func_recurse(astree* node, symbol_stack* s){
+   if(node->symbol == TOK_FUNCTION){
+      s->enter_block();
+      symbol* func_sym = new_symbol(node);
+      func_sym->parameters = new vector<symbol*>;
+      for(auto child : node->children[1]->children){
+         symbol* sym = s->lookup_ident(child);
+         func_sym->parameters->push_back(sym);
+      }
+      if(func_sym != nullptr){
+         if(func_sym->parameters == nullptr){
+            errprintf("Error %d %d %d: Function name %s is identical to identifier\n", node->filenr, node->linenr, node->offset, node->lexinfo->c_str());
+            return;
+         }
+         for(auto param : *func_sym->parameters){
+            
+            
+         }
+         s->define_ident(node->children[0]->children[0]);
+         block_recurse(node->children[2], s);
+         s->leave_block();
+         s->leave_block();
+
+      }
+   }
+}
+
+
+void type_check_body(astree* node, symbol_stack* s, symbol_table *type_table, size_t depth){
    astree* lchild = nullptr;
    astree* rchild = nullptr;
    symbol *sym;
@@ -43,7 +79,18 @@ void type_check_body(astree* node, symbol_stack s, symbol_table type_table, size
    if(node->children.size() >= 2)
       rchild = node->children[1];
    switch(node->symbol){
+      case TOK_ROOT:
       case TOK_DECLID:
+      case TOK_TYPEID:
+      case TOK_FIELD:
+         break;
+      case TOK_FUNCTION:
+         {
+           func_recurse(node, s); 
+         }
+      case TOK_BOOL:
+         lchild->attr[attr_bool] = 1;
+         adopt_attrs(node, lchild);
          break;
       case TOK_INT:
          lchild->attr[attr_int] = 1;
@@ -59,19 +106,29 @@ void type_check_body(astree* node, symbol_stack s, symbol_table type_table, size
          break;
       case TOK_VARDECL:
          lchild->children[0]->attr[attr_lval] = 1;
-         if(s.lookup_ident(lchild->children[0]))
+         adopt_attrs(node, lchild);
+         if(s->lookup_ident(lchild->children[0]))
             errprintf("Error %d %d %d: Duplicate declaration %s\n", node->filenr, node->linenr, node->offset, lchild->children[0]->lexinfo->c_str());
-         s.define_ident(lchild->children[0]);
+         s->define_ident(lchild->children[0]);
          break;
       case TOK_IDENT:
-         sym = s.lookup_ident(node);
+         sym = s->lookup_ident(node);
          if(sym == nullptr)
             errprintf("Error %d %d %d: Reference to undefined variable %s\n", node->filenr, node->linenr, node->offset, node->lexinfo->c_str());
          break;
       case TOK_STRUCT:
          {
-            
+            st_insert(type_table, lchild);            
+            symbol* sym = st_lookup(type_table, lchild);
+            sym->fields = new symbol_table;
+            for(auto child = node->children.begin()+1; child != node->children.end(); ++child){
+               st_insert(sym->fields, *child);
+            }
+         break;
          }
+      case TOK_BLOCK:
+         block_recurse(node, s);
+         s->leave_block();
          break;
       case TOK_LT:
       case TOK_LE:
@@ -176,6 +233,7 @@ void type_check_body(astree* node, symbol_stack s, symbol_table type_table, size
       case TOK_IF:
          if(!lchild->attr[attr_bool])
             errprintf("Error %d %d %d: If or while must be bool\n", node->filenr, node->linenr, node->offset);
+         break;
       default:
          errprintf("Invalid symbol %s\n", get_yytname(node->symbol));
          
@@ -183,13 +241,13 @@ void type_check_body(astree* node, symbol_stack s, symbol_table type_table, size
    
 }
 
-void type_check_rec(astree* root, symbol_stack s, symbol_table type_table, size_t depth){
+void type_check_rec(astree* root, symbol_stack* s, symbol_table *type_table, size_t depth){
    for(auto child : root->children){
       type_check_rec(child, s, type_table, depth+1);
    }
    type_check_body(root, s, type_table, depth);
 }
 
-void type_check(astree* root, symbol_stack s, symbol_table type_table){
+void type_check(astree* root, symbol_stack* s, symbol_table *type_table){
    type_check_rec(root, s, type_table, 0);
 }
