@@ -170,7 +170,9 @@ void type_check_body(astree* node, symbol_stack* s,
          break;
       case TOK_ARRAY:
          lchild->attr[attr_array];
-         lchild->children[0]->attr[attr_array];
+         if(lchild == nullptr || lchild->children.empty())
+            break;
+         lchild->children[0]->attr[attr_array] = 1;
          break;
       case TOK_VARDECL:
          lchild->children[0]->attr[attr_lval] = 1;
@@ -236,6 +238,8 @@ void type_check_body(astree* node, symbol_stack* s,
          }
       case '=':
          {
+            if(lchild == nullptr)
+               break;
             if(lchild->attr[attr_lval] && 
                rchild->attr[attr_vreg]){
                adopt_type(node, lchild); 
@@ -253,6 +257,8 @@ void type_check_body(astree* node, symbol_stack* s,
             node->attr[attr_int] = 1;
             if(rchild == nullptr){
                //unary operator
+               if(lchild == nullptr)
+                  break;
                if(!lchild->attr[attr_int]){
                   errprintf("Error %d %d %d: "
                      "Non int arithmetic operator\n", 
@@ -300,7 +306,6 @@ void type_check_body(astree* node, symbol_stack* s,
                "Cannot make non int type into ord\n", 
                node->filenr, node->linenr, node->offset);
          break;
-      //NEED TO DO TYPEIDS AND STRINGS AND ARRAYS
       case TOK_INTCON:
          node->attr[attr_int] = 1;
          node->attr[attr_const] = 1;
