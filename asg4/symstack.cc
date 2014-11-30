@@ -12,7 +12,7 @@ void symbol_stack::leave_block(){
 
 void symbol_stack::define_ident(astree* node){
    if(stack.back() == nullptr)
-      stack.push_back(new symbol_table);
+      stack.back() = new symbol_table;
    st_insert(stack.back(), node);
 }
 
@@ -30,7 +30,7 @@ symbol* symbol_stack::lookup_ident(astree* node){
 void symbol_stack::dump(){
    int i = 0;
    for(auto sym_table : stack){
-      cout<<"Table "<<i<<endl;
+      cout<<"Table "<<i++<<endl;
       if(sym_table == nullptr)
          continue;
       ::dump(sym_table);

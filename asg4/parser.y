@@ -30,8 +30,8 @@
 %left '*' '/' '%'
 %right TOK_ORD TOK_CHR TOK_POS TOK_NEG '!'
 %left TOK_ARRAY TOK_FIELD TOK_FUNCTION '.' '['
-%nonassoc TOK_NEW
-%nonassoc TOK_PARENS
+%nonassoc TOK_NEW 
+%nonassoc TOK_PARENS 
 
 %start start
 
@@ -50,9 +50,9 @@ program  : program structdef     {$$ = adopt1($1, $2)}
 structdef: structdh '}'          {$$ = $1;}
 
 structdh : structdh fielddecl ';'
-               {free_ast($3); $$ = adopt1($1, $2);}
+               {$$ = adopt1($1, $2);}
          | TOK_STRUCT TOK_IDENT '{'            
-               {free_ast($3); $2 = change_sym($2, TOK_TYPEID);
+               {$2 = change_sym($2, TOK_TYPEID);
                $$ = adopt1($1, $2);}
 
 fielddecl: basetype TOK_ARRAY TOK_IDENT  
@@ -73,7 +73,7 @@ basetype : TOK_VOID        {$$ = $1}
          ;   
 
 function : identdecl paramhead ')' block        
-               {free_ast($3); $$ = new_function($1, $2, $4);}
+               {$$ = new_function($1, $2, $4);}
 
 paramhead: paramhead ',' identdecl {$$ = adopt1($1, $3);}
          | '(' identdecl                  
@@ -82,17 +82,18 @@ paramhead: paramhead ',' identdecl {$$ = adopt1($1, $3);}
                {$$ = change_sym($1, TOK_PARAM);}
 
 identdecl: basetype TOK_ARRAY TOK_IDENT 
-               {$1 = change_sym($3, TOK_DECLID);
-               $$ = adopt2($2, $1, $3);}
-         | basetype TOK_IDENT           
+               {$3 = change_sym($3, TOK_DECLID);
+               $1 = adopt1($1, $3);
+               $$ = adopt1($2, $1);}
+         | basetype TOK_IDENT %prec T2          
                {$2 = change_sym($2, TOK_DECLID);
                $$ = adopt1($1, $2);}
          ;
 
 block    : blockhead '}'         
-               {free_ast($2); $$ = change_sym($1, TOK_BLOCK);}
+               {$$ = change_sym($1, TOK_BLOCK);}
          | '{' '}'               
-               {free_ast($2);
+               {;
                $$ = change_sym($1, TOK_BLOCK);}
          | ';'                   
                {$$ = change_sym($1, TOK_BLOCK); }
@@ -106,28 +107,25 @@ statement: block        {$$ = $1}
          | while        {$$ = $1}
          | ifelse       {$$ = $1}
          | return       {$$ = $1}
-         | expr ';'     {free_ast($2); 
-                        $$ = $1}
+         | expr ';'     {$$ = $1}
          ;
       
 vardecl  : identdecl '=' expr ';'      
-               {free_ast($4);
-               $2 = change_sym($2, TOK_VARDECL);
+               {$2 = change_sym($2, TOK_VARDECL);
                $$ = adopt2($2, $1, $3);}
          ;
 
 while    : whilehead statement  {$$ = adopt1($1, $2);}
          ;
 
-whilehead: TOK_WHILE '(' expr ')'            {free_ast2($2, $4);
-                                             $$ = adopt1($1, $3);}
+whilehead: TOK_WHILE '(' expr ')'            {$$ = adopt1($1, $3);}
 
 ifelse   : TOK_IF '(' expr ')' statement %prec TOK_IF
-               {free_ast2($2, $4); $$ = adopt2($1, $3, $5);}
+               {$$ = adopt2($1, $3, $5);}
          | TOK_IF '(' expr ')' statement TOK_ELSE statement
                {$1 = adopt1sym($1, $3, TOK_IFELSE); 
                $$ = adopt2($1, $5, $7);
-               free_ast2($2, $4); free_ast($6);}
+               }
          
 return   : TOK_RETURN expr ';'   {$$ = adopt1($1, $2);}
          | TOK_RETURN ';'        {$$ = adopt1sym(
@@ -138,8 +136,7 @@ expr     : binop                          {$$ = $1;}
          | unop                           {$$ = $1;}
          | allocator %prec TOK_NEW        {$$ = $1;}
          | call                           {$$ = $1;}
-         | '(' expr ')' %prec TOK_PARENS  {free_ast2($1, $3);
-                                          $$ = $1;}
+         | '(' expr ')' %prec TOK_PARENS  {$$ = $1;}
          | variable                       {$$ = $1;}
          | constant                       {$$ = $1;}
          ;
@@ -168,24 +165,25 @@ unop     : '!' expr                 {$$ = adopt1($1, $2);}
          | TOK_CHR expr         {$$ = adopt1($1, $2);}
 
 allocator: TOK_NEW TOK_IDENT '(' ')'         
-               {$$ = adopt1sym($1, $2, TOK_TYPEID);}
+               {$2 = change_sym($2, TOK_TYPEID);
+               $$ = adopt1($1, $2);}
          | TOK_NEW TOK_STRING '(' expr ')'   
-               {free_ast2($3, $5); 
+               {
                $$ = adopt1sym($1, $4, TOK_NEWSTRING);}
          | TOK_NEW basetype '[' expr ']'     
-               {free_ast2($3, $5); 
+               { 
                $$ = adopt2sym($1, $2, $4, TOK_NEWARRAY);}
          ;
 
 call     : TOK_IDENT '(' ')'        
                {$$ = adopt1sym($1, $2, TOK_CALL);}
          | TOK_IDENT callargs ')'   
-               {free_ast($3);
+               {
                $$ = adopt1sym($2, $1, TOK_CALL);}
          ;
 
 callargs : '(' expr           {$$ = adopt1($1, $2);}
-         | callargs ',' expr  {free_ast($2);
+         | callargs ',' expr  {
                               $$ = adopt1($1, $3);}
          ;
 

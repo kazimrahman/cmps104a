@@ -29,6 +29,7 @@ struct astree {
    size_t blocknr;
    attr_bitset attr;
    symbol_table* struct_table;
+   size_t deffilenr, deflinenr, defoffset;
 };
 
 

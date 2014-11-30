@@ -15,9 +15,10 @@ struct symbol{
    size_t filenr, linenr, offset;
    size_t blocknr;
    vector<symbol*>* parameters;
+   size_t deffilenr, deflinenr, defoffset;
 };
 
 symbol* new_symbol(astree* node);
-void st_insert(symbol_table* st, astree* node);
-symbol* st_lookup(symbol_table* st, astree* node);
+void st_insert(symbol_table* st,  astree* node);
+symbol* st_lookup(symbol_table* st,  astree* node);
 void dump(symbol_table* st);

@@ -137,11 +137,10 @@ static void dump_node (FILE* outfile, astree* node) {
          enum_bitset(node->attr).c_str()
          );
       if(node->symbol == TOK_IDENT){
-//         symbol* sym = s.lookup(node);
-//         fprintf(outfile, "(%zu.%zu.%zu)"
-//         sym->filenr,
-//         sym->linenr,
-//         sym->offset);
+         fprintf(outfile, "(%zu.%zu.%zu)",
+         node->deffilenr,
+         node->deflinenr,
+         node->defoffset);
 
       }
       fprintf(outfile, "\n");

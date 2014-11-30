@@ -10,11 +10,11 @@ using namespace std;
 #include <unistd.h>
 #include <libgen.h>
 #include <vector>
+#include <iostream>
 #include "lyutils.h"
 #include "stringset.h"
 #include "auxlib.h"
 #include "astree.h"
-#include "symstack.h"
 #include "typecheck.h"
 
 #define BUFSIZE 4096
@@ -109,7 +109,9 @@ int main (int argc, char **argv) {
    symbol_table* type_table = new symbol_table;
    s->stack.push_back(new symbol_table);
    type_check(yyparse_astree, s, type_table);
+   cout<<"Sym Table"<<endl;
    s->dump();
+   cout<<"Type table"<<endl;
    dump(type_table);
    dump_astree(astfile, yyparse_astree);
    fclose(strfile);
