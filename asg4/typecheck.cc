@@ -145,8 +145,10 @@ void type_check_body(FILE* outfile, astree* node, symbol_stack* s,
          break;
       case TOK_FIELD:
          node->attr[attr_field] = 1;
-         if(lchild != nullptr)
+         if(lchild != nullptr){
             lchild->attr[attr_field] = 1;
+            adopt_type(node, lchild);
+          }
          break;
       case TOK_NEWARRAY:
          node->attr[attr_vreg] = 1;
@@ -184,6 +186,8 @@ void type_check_body(FILE* outfile, astree* node, symbol_stack* s,
       case '.':
          node->attr[attr_vaddr];
          node->attr[attr_lval];
+         sym = st_lookup(type_table, node);
+         adopt_type(node, lchild);
          break;
       case TOK_TYPEID:
          node->attr[attr_typeid] = 1;
@@ -240,6 +244,9 @@ void type_check_body(FILE* outfile, astree* node, symbol_stack* s,
          break;
       case TOK_IDENT:
          sym = s->lookup_ident(node);
+         if(sym == nullptr)
+            //in case we are looking for a struct
+            sym = st_lookup(type_table, node);
          if(sym == nullptr){
             errprintf("Error %d %d %d: Reference to undefined "
                "variable %s\n", node->filenr, node->linenr,
