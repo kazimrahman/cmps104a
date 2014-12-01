@@ -140,6 +140,8 @@ void type_check_body(FILE* outfile, astree* node, symbol_stack* s,
       case ')':
       case '}':
       case ']':
+      case ';':
+      case TOK_RETURNVOID:
          break;
       case TOK_FIELD:
          node->attr[attr_field] = 1;
@@ -185,6 +187,8 @@ void type_check_body(FILE* outfile, astree* node, symbol_stack* s,
          break;
       case TOK_TYPEID:
          node->attr[attr_typeid] = 1;
+//         node->attr[attr_variable] = 1;
+//         node->attr[attr_lval] = 1;
          break;
       case TOK_VOID:
          lchild->attr[attr_void] = 1;
