@@ -38,11 +38,6 @@ void adopt_attrs(astree* parent, astree* child){
 void print_sym(FILE* outfile, symbol_stack* s, 
    symbol_table* type_table, astree* node){
    auto set = node->attr;
-//   if(set[attr_variable] || 
-//      set[attr_typeid] || 
-//      set[attr_field] || 
-//      set[attr_function] ||
-//      set[attr_struct]){
       if((node->blocknr == 0 && !node->attr[attr_field]) 
          || node->attr[attr_struct])
          fprintf(outfile, "\n");
@@ -63,7 +58,6 @@ void print_sym(FILE* outfile, symbol_stack* s,
          
       }
    fprintf(outfile, "\n");
-//   }
 }
 
 void block_recurse(astree* node, symbol_stack* s){
@@ -76,19 +70,24 @@ void block_recurse(astree* node, symbol_stack* s){
    }
 }
 
-void func_recurse(astree* node, symbol_stack* s){
+void func_recurse(FILE* outfile, astree* node, symbol_stack* s,
+      symbol_table* type_table){
    //put func in symtable
    node->children[0]->children[0]->attr[attr_function] = 1;
    st_insert(s->stack[0], node->children[0]->children[0]);
    for(auto param : node->children[1]->children){
       param->children[0]->attr[attr_variable] = 1;
       param->children[0]->attr[attr_lval] = 1;
-      s->define_ident(param);
+      param->children[0]->attr[attr_param] = 1;
+      s->define_ident(param->children[0]);
+      print_sym(outfile, s, type_table, param->children[0]);
    }
    //recursing on func node would remove it from global scope
    for(auto child = node->children.begin()+1; 
-      child != node->children.end(); ++child)
+         child != node->children.end(); ++child){
       block_recurse(*child, s);
+      //print_sym(outfile, s, type_table, *child);
+   }
    s->leave_block();
 }
 
@@ -102,8 +101,10 @@ void proto_recurse(FILE* outfile, astree* node, symbol_stack* s,
    for(auto param : node->children[1]->children){
       param->children[0]->attr[attr_variable] = 1;
       param->children[0]->attr[attr_lval] = 1;
+      param->children[0]->attr[attr_param] = 1;
+      param->children[0]->blocknr = next_block;
       s->define_ident(param);
-      print_sym(outfile, s, type_table, param);
+      print_sym(outfile, s, type_table, param->children[0]);
       block_recurse(param, s);
    }
    s->leave_block();
@@ -162,7 +163,7 @@ void type_check_body(astree* node, symbol_stack* s,
          }
       case TOK_FUNCTION:
          s->enter_block();
-         func_recurse(node, s); 
+         func_recurse(outfile, node, s, type_table); 
          print_sym(stdout, s, type_table, node);
          s->leave_block();
          break;
