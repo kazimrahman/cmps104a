@@ -11,6 +11,8 @@ using namespace std;
 
 const string* intern_stringset (const char*);
 
+bool count_stringset (const char*);
+
 void dump_stringset (FILE*);
 
 RCSH("$Id: stringset.h,v 1.1 2013-10-11 18:53:00-07 - - $")

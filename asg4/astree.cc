@@ -6,10 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
-
+#include <set>
 #include "astree.h"
 #include "stringset.h"
 #include "lyutils.h"
+
+set<string*> ghetto_stringset;
 
 astree* new_astree (int symbol, int filenr, int linenr, int offset,
                     const char* lexinfo) {
@@ -146,20 +148,42 @@ static void dump_node (FILE* outfile, astree* node) {
       fprintf(outfile, "\n");
 }
 
-static void dump_astree_rec (FILE* outfile, astree* root, int depth) {
+static void dump_sym (FILE* outfile, astree* node) {
+   auto set = node->attr;
+   if(set[attr_variable] || 
+      set[attr_typeid] || 
+      set[attr_field]){
+      if(ghetto_stringset.count(const_cast<string*>(node->lexinfo)))
+         return;
+      ghetto_stringset.insert(const_cast<string*>(node->lexinfo));
+      if(node->blocknr == 0)
+         fprintf(outfile, "\n");
+      fprintf(outfile, 
+         "%s (%zu.%zu.%zu) {%zu} %s",
+         (node->lexinfo)->c_str(), 
+         node->filenr,
+         node->linenr,
+         node->offset,
+         node->blocknr,
+         enum_bitset(node->attr).c_str()
+      );
+   fprintf(outfile, "\n");
+   }
+}
+static void dump_astree_rec (FILE* astfile, FILE* symfile, astree* root, int depth) {
    if (root == NULL) return;
-   //fprintf (outfile, "%*s%s ", depth * 3, "", root->lexinfo->c_str());
    for (int i=0; i<=depth; i++)
-           fprintf(outfile, "|\t");
-   dump_node (outfile, root);
-   fprintf (outfile, "\n");
+           fprintf(astfile, "|\t");
+   dump_node (astfile, root);
+   dump_sym (symfile, root);
+   fprintf (astfile, "\n");
    for (size_t child = 0; child < root->children.size(); ++child) {
-      dump_astree_rec (outfile, root->children[child], depth + 1);
+      dump_astree_rec (astfile, symfile, root->children[child], depth + 1);
    }
 }
 
-void dump_astree (FILE* outfile, astree* root) {
-   dump_astree_rec (outfile, root, 0);
+void dump_astree (FILE* astfile, FILE* symfile, astree* root) {
+   dump_astree_rec (astfile, symfile, root, 0);
    fflush (NULL);
 }
 

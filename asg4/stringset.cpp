@@ -16,6 +16,10 @@ const string* intern_stringset (const char* string) {
    return &*handle.first;
 }
 
+bool count_stringset (const char* string) {
+   return set.count(string);
+}
+
 void dump_stringset (FILE* out) {
    size_t max_bucket_size = 0;
    for (size_t bucket = 0; bucket < set.bucket_count();

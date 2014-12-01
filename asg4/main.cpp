@@ -18,7 +18,7 @@ using namespace std;
 #include "typecheck.h"
 
 #define BUFSIZE 4096
-size_t next_block = 1;
+size_t next_block = 0;
 
 /*Returns a pipe to a preprocessor which has been fed ocfname*/
 FILE* preprocess(string ocfname, string options){
@@ -94,12 +94,14 @@ int main (int argc, char **argv) {
    char* str_fname = append_extension(ocfname, ".str");
    char* tok_fname = append_extension(ocfname, ".tok");
    char* ast_fname = append_extension(ocfname, ".ast");
+   char* sym_fname = append_extension(ocfname, ".sym");
 
    //Dump str to file
    FILE* strfile = fopen(str_fname, "w");
    //Data is dumped to tokfile via scanner and lyutils
    tokfile = fopen(tok_fname, "w");
    FILE* astfile = fopen(ast_fname, "w");
+   FILE* symfile = fopen(sym_fname, "w");
 
    yyin = preprocess(ocfname, dflag);   
    yyparse();
@@ -113,7 +115,7 @@ int main (int argc, char **argv) {
    s->dump();
    cout<<"Type table"<<endl;
    dump(type_table);
-   dump_astree(astfile, yyparse_astree);
+   dump_astree(astfile, symfile, yyparse_astree);
    fclose(strfile);
    fclose(tokfile);
    fclose(astfile);

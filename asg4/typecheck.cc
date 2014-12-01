@@ -1,4 +1,5 @@
 #include "typecheck.h"
+#define UNUSED(x) (void)(x)
 
 bool compare_prim(astree* left, astree* right){
    for(size_t i = 0; i < attr_function; ++i){
@@ -45,58 +46,84 @@ void block_recurse(astree* node, symbol_stack* s){
 }
 
 void func_recurse(astree* node, symbol_stack* s){
-   symbol* func_sym = new_symbol(node);
-   st_insert(s->stack[0],  node->children[0]->children[0]);
-   adopt_attrs(node, node->children[0]);
+   //put func in symtable
+   st_insert(s->stack[0], node->children[0]->children[0]);
    s->enter_block();
-   func_sym->parameters = new vector<symbol*>;
-   for(auto child : node->children[1]->children){
-      //symbol* sym = s->lookup_ident(child);
-      //func_sym->parameters->push_back(sym);
-      s->define_ident(child);
+   for(auto param : node->children[1]->children){
+      s->define_ident(param);
    }
-   if(func_sym != nullptr){
-      if(func_sym->parameters == nullptr){
-         errprintf("Error %d %d %d: \
-            Function name %s is identical to identifier\n",
-            node->filenr, node->linenr, node->offset, 
-            node->lexinfo->c_str());
-         return;
-      }
-      s->define_ident(node->children[0]->children[0]);
-      block_recurse(node->children[2], s);
-      s->leave_block();
-      s->leave_block();
+   //check if func is in symtable
+   //s->lookup_ident(node);
+   //recursing on func node would remove it from global scope
+   for(auto child = node->children.begin()+1; child != node->children.end(); ++child)
+      block_recurse(*child, s);
+   s->leave_block();
+   s->leave_block();
 
-   }
+
+
+//   symbol* func_sym = new_symbol(node);
+//   node->children[0]->children[0]->attr[attr_function] = 1;
+//   st_insert(s->stack[0],  node->children[0]->children[0]);
+//   adopt_attrs(node, node->children[0]);
+//   block_recurse(node, s);
+//   func_sym->parameters = new vector<symbol*>;
+//   for(auto child : node->children[1]->children){
+//      child->children[0]->attr[attr_param] = 1;
+//      s->define_ident(child->children[0]);
+//   }
+//   if(func_sym != nullptr){
+//      if(func_sym->parameters == nullptr){
+//         errprintf("Error %d %d %d: \
+//            Function name %s is identical to identifier\n",
+//            node->filenr, node->linenr, node->offset, 
+//            node->lexinfo->c_str());
+//         return;
+//      }
+//      //s->define_ident(node->children[0]->children[0]);
+//      s->leave_block();
+//   }
 }
 
 void proto_recurse(astree* node, symbol_stack* s){
-   symbol* func_sym = new_symbol(node);
-   //s->define_ident(node->children[0]->children[0]);
-   st_insert(s->stack[0],  node->children[0]->children[0]);
+   st_insert(s->stack[0], node->children[0]->children[0]);
    s->enter_block();
-   adopt_attrs(node, node->children[0]);
-   func_sym->parameters = new vector<symbol*>;
-   for(auto child : node->children[1]->children){
-      symbol* sym = s->lookup_ident(child);
-      func_sym->parameters->push_back(sym);
+   for(auto param : node->children[1]->children){
+      s->define_ident(param);
+      block_recurse(param, s);
    }
-   if(func_sym != nullptr){
-      if(func_sym->parameters == nullptr){
-         errprintf("Error %d %d %d: \
-            Function name %s is identical to identifier\n",
-            node->filenr, node->linenr, node->offset, 
-            node->lexinfo->c_str());
-         return;
-      }
-   }
+   //check if func is in symtable
+   //s->lookup_ident(node);
+   //put func in symtable
    s->leave_block();
+//   symbol* func_sym = new_symbol(node);
+//   node->children[0]->children[0]->attr[attr_function] = 1;
+//   //s->define_ident(node->children[0]->children[0]);
+//   st_insert(s->stack[0],  node->children[0]->children[0]);
+//   block_recurse(node, s);
+//   adopt_attrs(node, node->children[0]);
+//   func_sym->parameters = new vector<symbol*>;
+//   for(auto child : node->children[1]->children){
+//      child->children[0]->attr[attr_param] = 1;
+//      symbol* sym = s->lookup_ident(child->children[0]);
+//      func_sym->parameters->push_back(sym);
+//   }
+//   if(func_sym != nullptr){
+//      if(func_sym->parameters == nullptr){
+//         errprintf("Error %d %d %d: \
+//            Function name %s is identical to identifier\n",
+//            node->filenr, node->linenr, node->offset, 
+//            node->lexinfo->c_str());
+//         return;
+//      }
+//   }
+//   s->leave_block();
 }
 
 
 void type_check_body(astree* node, symbol_stack* s, 
    symbol_table *type_table, size_t depth){
+   UNUSED(depth);
    astree* lchild = nullptr;
    astree* rchild = nullptr;
    symbol *sym;
@@ -109,6 +136,13 @@ void type_check_body(astree* node, symbol_stack* s,
       case TOK_DECLID:
       case TOK_FIELD:
       case TOK_PARAM:
+      case TOK_RETURN:
+      case '(':
+         break;
+      case TOK_NEWARRAY:
+         node->attr[attr_vreg] = 1;
+         node->attr[attr_array] = 1;
+         adopt_type(node, lchild);
          break;
       case TOK_NEW:
          adopt_attrs(node, lchild); 
@@ -130,14 +164,15 @@ void type_check_body(astree* node, symbol_stack* s,
             break;
          }
       case TOK_FUNCTION:
-           func_recurse(node, s); 
-           break;
+         func_recurse(node, s); 
+         break;
       case TOK_PROTOTYPE:
-            proto_recurse(node, s);
+         proto_recurse(node, s);
          break;
       case '.':
          node->attr[attr_vaddr];
          node->attr[attr_lval];
+         break;
       case TOK_TYPEID:
          node->attr[attr_typeid] = 1;
          break;
@@ -174,8 +209,13 @@ void type_check_body(astree* node, symbol_stack* s,
             break;
          lchild->children[0]->attr[attr_array] = 1;
          break;
+      case TOK_INDEX:
+         node->attr[attr_lval] = 1;
+         node->attr[attr_vaddr] = 1;
+         break;
       case TOK_VARDECL:
          lchild->children[0]->attr[attr_lval] = 1;
+         lchild->children[0]->attr[attr_variable] = 1;
          adopt_attrs(node, lchild);
          if(s->lookup_ident(lchild->children[0]))
             errprintf("Error %d %d %d: Duplicate declaration %s\n",
@@ -329,6 +369,7 @@ void type_check_body(astree* node, symbol_stack* s,
          break;
       case TOK_WHILE:
       case TOK_IF:
+      case TOK_IFELSE:
          if(!lchild->attr[attr_bool])
             errprintf("Error %d %d %d: "
                "If or while must be bool\n", 
@@ -338,6 +379,8 @@ void type_check_body(astree* node, symbol_stack* s,
          errprintf("Invalid symbol %s\n", 
             get_yytname(node->symbol));
    }  
+   if(node->attr[attr_lval])
+      node->attr[attr_variable] = 1;
 }
 
 void type_check_rec(astree* root, symbol_stack* s, 
@@ -351,4 +394,6 @@ void type_check_rec(astree* root, symbol_stack* s,
 void type_check(astree* root, symbol_stack* s, 
    symbol_table *type_table){
    type_check_rec(root, s, type_table, 0);
+   while(!s->stack.empty())
+      s->stack.pop_back();
 }

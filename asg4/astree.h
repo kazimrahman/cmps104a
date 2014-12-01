@@ -44,7 +44,7 @@ astree* adopt1sym (astree* root, astree* child, int symbol);
 astree* adopt2sym (
       astree* root, astree* left, astree* right, int symbol);
 astree* change_sym (astree* root, int symbol);
-void dump_astree (FILE* outfile, astree* root);
+void dump_astree (FILE* astfile, FILE* symfile, astree* root);
 void yyprint (FILE* outfile, unsigned short toknum,
               astree* yyvaluep);
 void free_ast (astree* tree);
