@@ -83,7 +83,7 @@ int yylval_token (int symbol) {
 
 void error_destructor (astree* tree) {
    if (tree == yyparse_astree) return;
-   DEBUGSTMT ('a', dump_astree (stderr, nullptr, tree); );
+   DEBUGSTMT ('a', dump_astree (stderr, tree); );
    free_ast (tree);
 }
 

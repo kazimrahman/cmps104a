@@ -148,55 +148,21 @@ static void dump_node (FILE* outfile, astree* node) {
       fprintf(outfile, "\n");
 }
 
-void dump_sym (FILE* outfile, astree* node) {
-   auto set = node->attr;
-   if(set[attr_variable] || 
-      set[attr_typeid] || 
-      set[attr_field] || 
-      set[attr_function] ||
-      set[attr_struct]){
-      if(ghetto_stringset.count(const_cast<string*>(node->lexinfo)))
-         return;
-      if(node->symbol == TOK_NEW) return;
-      ghetto_stringset.insert(const_cast<string*>(node->lexinfo));
-      if((node->blocknr == 0 && !node->attr[attr_field]) 
-         || node->attr[attr_struct])
-         fprintf(outfile, "\n");
-      else
-         fprintf(outfile, "   ");
-      fprintf(outfile, 
-         "%s (%zu.%zu.%zu) {%zu} %s",
-         (node->lexinfo)->c_str(), 
-         node->filenr,
-         node->linenr,
-         node->offset,
-         node->blocknr,
-         enum_bitset(node->attr).c_str()
-      );
-      if(node->attr[attr_struct])
-         fprintf(outfile, "\"%s\"", node->lexinfo->c_str());
-      if(!node->attr[attr_field]){
-         
-      }
-   fprintf(outfile, "\n");
-   }
-}
-static void dump_astree_rec (FILE* astfile, FILE* symfile, 
+static void dump_astree_rec (FILE* astfile, 
    astree* root, int depth) {
    if (root == NULL) return;
    for (int i=0; i<=depth; i++)
            fprintf(astfile, "|\t");
    dump_node (astfile, root);
-   dump_sym (symfile, root);
    fprintf (astfile, "\n");
    for (size_t child = 0; child < root->children.size(); ++child) {
-      dump_astree_rec (astfile, symfile, root->children[child], 
+      dump_astree_rec (astfile, root->children[child], 
          depth + 1);
    }
 }
 
-void dump_astree (FILE* astfile, FILE* symfile, astree* root) {
-   dump_astree_rec (astfile, symfile, root, 0);
+void dump_astree (FILE* astfile, astree* root) {
+   dump_astree_rec (astfile, root, 0);
    fflush (NULL);
 }
 

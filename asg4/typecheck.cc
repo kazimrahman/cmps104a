@@ -121,9 +121,8 @@ void proto_recurse(FILE* outfile, astree* node, symbol_stack* s,
 }
 
 
-void type_check_body(astree* node, symbol_stack* s, 
+void type_check_body(FILE* outfile, astree* node, symbol_stack* s, 
    symbol_table *type_table, size_t depth){
-   FILE* outfile = stdout;
    UNUSED(depth);
    astree* lchild = nullptr;
    astree* rchild = nullptr;
@@ -174,7 +173,7 @@ void type_check_body(astree* node, symbol_stack* s,
       case TOK_FUNCTION:
          s->enter_block();
          func_recurse(outfile, node, s, type_table); 
-         print_sym(stdout, s, type_table, node);
+         print_sym(outfile, s, type_table, node);
          //s->leave_block();
          break;
       case TOK_PROTOTYPE:
@@ -233,7 +232,7 @@ void type_check_body(astree* node, symbol_stack* s,
                node->filenr, node->linenr, node->offset, 
                lchild->children[0]->lexinfo->c_str());
          s->define_ident(lchild->children[0]);
-         print_sym(stdout, s, type_table, lchild->children[0]);
+         print_sym(outfile, s, type_table, lchild->children[0]);
          break;
       case TOK_IDENT:
          sym = s->lookup_ident(node);
@@ -398,18 +397,17 @@ void type_check_body(astree* node, symbol_stack* s,
       node->attr[attr_variable] = 1;
 }
 
-void type_check_rec(astree* root, symbol_stack* s, 
+void type_check_rec(FILE* outfile, astree* root, symbol_stack* s, 
    symbol_table *type_table, size_t depth){
    for(auto child : root->children){
-      type_check_rec(child, s, type_table, depth+1);
+      type_check_rec(outfile, child, s, type_table, depth+1);
    }
-   type_check_body(root, s, type_table, depth);
-//   print_sym(stdout, s, type_table, root);
+   type_check_body(outfile, root, s, type_table, depth);
 }
 
-void type_check(astree* root, symbol_stack* s, 
+void type_check(FILE* outfile, astree* root, symbol_stack* s, 
    symbol_table *type_table){
-   type_check_rec(root, s, type_table, 0);
+   type_check_rec(outfile, root, s, type_table, 0);
    while(!s->stack.empty())
       s->stack.pop_back();
 }
