@@ -35,6 +35,8 @@ void adopt_attrs(astree* parent, astree* child){
    }
 }
 
+astree* last_struct = nullptr;
+
 void print_sym(FILE* outfile, symbol_stack* s, 
    symbol_table* type_table, astree* node){
    auto set = node->attr;
@@ -43,6 +45,7 @@ void print_sym(FILE* outfile, symbol_stack* s,
          fprintf(outfile, "\n");
       else
          fprintf(outfile, "   ");
+      if(!node->attr[attr_field]){
       fprintf(outfile, 
          "%s (%zu.%zu.%zu) {%zu} %s",
          (node->lexinfo)->c_str(), 
@@ -50,12 +53,22 @@ void print_sym(FILE* outfile, symbol_stack* s,
          node->linenr,
          node->offset,
          node->blocknr,
+         enum_bitset(node->attr).c_str());
+      }
+      else{
+      fprintf(outfile, 
+         "%s (%zu.%zu.%zu) {%s} %s",
+         (node->lexinfo)->c_str(), 
+         node->filenr,
+         node->linenr,
+         node->offset,
+         last_struct->lexinfo->c_str(),
          enum_bitset(node->attr).c_str()
       );
-      if(node->attr[attr_struct])
+      }
+      if(node->attr[attr_struct]){
          fprintf(outfile, "\"%s\"", node->lexinfo->c_str());
-      if(!node->attr[attr_field]){
-         
+         last_struct = node;
       }
    fprintf(outfile, "\n");
 }
