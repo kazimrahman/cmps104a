@@ -77,6 +77,41 @@ void proto_recurse(astree* node, symbol_stack* s){
    s->leave_block();
 }
 
+void print_sym(FILE* outfile, symbol_stack* s, 
+   symbol_table* type_table, astree* node){
+   auto set = node->attr;
+   if(set[attr_variable] || 
+      set[attr_typeid] || 
+      set[attr_field] || 
+      set[attr_function] ||
+      set[attr_struct]){
+      symbol* sym = s->lookup_ident(node);
+      if(sym != nullptr && sym->linenr != node->linenr)
+         fprintf(outfile, "%s not found\n", node->lexinfo->c_str());
+         return;
+      if(node->symbol == TOK_NEW) return;
+      if((node->blocknr == 0 && !node->attr[attr_field]) 
+         || node->attr[attr_struct])
+         fprintf(outfile, "\n");
+      else
+         fprintf(outfile, "   ");
+      fprintf(outfile, 
+         "%s (%zu.%zu.%zu) {%zu} %s",
+         (node->lexinfo)->c_str(), 
+         node->filenr,
+         node->linenr,
+         node->offset,
+         node->blocknr,
+         enum_bitset(node->attr).c_str()
+      );
+      if(node->attr[attr_struct])
+         fprintf(outfile, "\"%s\"", node->lexinfo->c_str());
+      if(!node->attr[attr_field]){
+         
+      }
+   fprintf(outfile, "\n");
+   }
+}
 
 void type_check_body(astree* node, symbol_stack* s, 
    symbol_table *type_table, size_t depth){
@@ -91,13 +126,17 @@ void type_check_body(astree* node, symbol_stack* s,
    switch(node->symbol){
       case TOK_ROOT:
       case TOK_DECLID:
-      case TOK_FIELD:
       case TOK_PARAM:
       case TOK_RETURN:
       case '(':
       case ')':
       case '}':
       case ']':
+         break;
+      case TOK_FIELD:
+         node->attr[attr_field] = 1;
+         if(lchild != nullptr)
+            lchild->attr[attr_field] = 1;
          break;
       case TOK_NEWARRAY:
          node->attr[attr_vreg] = 1;
@@ -143,25 +182,25 @@ void type_check_body(astree* node, symbol_stack* s,
          if(lchild == nullptr)
             break;
          lchild->attr[attr_bool] = 1;
-         adopt_attrs(node, lchild);
+         adopt_type(node, lchild);
          break;
       case TOK_INT:
          if(lchild == nullptr)
             break;
          lchild->attr[attr_int] = 1;
-         adopt_attrs(node, lchild);
+         adopt_type(node, lchild);
          break;
       case TOK_CHAR:
          if(lchild == nullptr)
             break;
          lchild->attr[attr_char] = 1;
-         adopt_attrs(node, lchild);
+         adopt_type(node, lchild);
          break;
       case TOK_STRING:
          if(lchild == nullptr)
             break;
          lchild->attr[attr_string] = 1;
-         adopt_attrs(node, lchild);
+         adopt_type(node, lchild);
          break;
       case TOK_ARRAY:
          lchild->attr[attr_array];
@@ -195,6 +234,7 @@ void type_check_body(astree* node, symbol_stack* s,
          break;
       case TOK_STRUCT:
          {
+            lchild->attr[attr_struct] = 1;
             st_insert(type_table,  lchild);            
             symbol* sym = st_lookup(type_table,  lchild);
             sym->fields = new symbol_table;
@@ -341,6 +381,7 @@ void type_check_body(astree* node, symbol_stack* s,
    }  
    if(node->attr[attr_lval])
       node->attr[attr_variable] = 1;
+   print_sym(stdout, s, type_table, node);
 }
 
 void type_check_rec(astree* root, symbol_stack* s, 

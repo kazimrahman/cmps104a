@@ -111,7 +111,7 @@ static string enum_tostring(size_t i){
    return "invalid_enum";
 }
 
-static string enum_bitset(attr_bitset a){
+string enum_bitset(attr_bitset a){
    string buf;
    for(int i=0; i<attr_bitset_size; ++i){
       if(a[i]){
@@ -153,11 +153,14 @@ static void dump_sym (FILE* outfile, astree* node) {
    if(set[attr_variable] || 
       set[attr_typeid] || 
       set[attr_field] || 
-      set[attr_function]){
+      set[attr_function] ||
+      set[attr_struct]){
       if(ghetto_stringset.count(const_cast<string*>(node->lexinfo)))
          return;
+      if(node->symbol == TOK_NEW) return;
       ghetto_stringset.insert(const_cast<string*>(node->lexinfo));
-      if(node->blocknr == 0)
+      if((node->blocknr == 0 && !node->attr[attr_field]) 
+         || node->attr[attr_struct])
          fprintf(outfile, "\n");
       else
          fprintf(outfile, "   ");
@@ -170,6 +173,11 @@ static void dump_sym (FILE* outfile, astree* node) {
          node->blocknr,
          enum_bitset(node->attr).c_str()
       );
+      if(node->attr[attr_struct])
+         fprintf(outfile, "\"%s\"", node->lexinfo->c_str());
+      if(!node->attr[attr_field]){
+         
+      }
    fprintf(outfile, "\n");
    }
 }

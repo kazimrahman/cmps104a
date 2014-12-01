@@ -49,6 +49,7 @@ void yyprint (FILE* outfile, unsigned short toknum,
               astree* yyvaluep);
 void free_ast (astree* tree);
 void free_ast2 (astree* tree1, astree* tree2);
+string enum_bitset(attr_bitset a);
 
 RCSH("$Id: astree.h,v 1.2 2013-10-11 18:52:46-07 - - $")
 #endif
