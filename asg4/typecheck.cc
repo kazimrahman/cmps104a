@@ -75,19 +75,17 @@ void func_recurse(FILE* outfile, astree* node, symbol_stack* s,
    //put func in symtable
    node->children[0]->children[0]->attr[attr_function] = 1;
    st_insert(s->stack[0], node->children[0]->children[0]);
+   print_sym(outfile, s, type_table, node->children[0]->children[0]);
    for(auto param : node->children[1]->children){
       param->children[0]->attr[attr_variable] = 1;
       param->children[0]->attr[attr_lval] = 1;
       param->children[0]->attr[attr_param] = 1;
+      param->children[0]->blocknr = next_block;
       s->define_ident(param->children[0]);
       print_sym(outfile, s, type_table, param->children[0]);
    }
    //recursing on func node would remove it from global scope
-   for(auto child = node->children.begin()+1; 
-         child != node->children.end(); ++child){
-      block_recurse(*child, s);
-      //print_sym(outfile, s, type_table, *child);
-   }
+   block_recurse(node->children[2], s);
    s->leave_block();
 }
 
@@ -105,7 +103,6 @@ void proto_recurse(FILE* outfile, astree* node, symbol_stack* s,
       param->children[0]->blocknr = next_block;
       s->define_ident(param);
       print_sym(outfile, s, type_table, param->children[0]);
-      block_recurse(param, s);
    }
    s->leave_block();
 }
@@ -165,7 +162,7 @@ void type_check_body(astree* node, symbol_stack* s,
          s->enter_block();
          func_recurse(outfile, node, s, type_table); 
          print_sym(stdout, s, type_table, node);
-         s->leave_block();
+         //s->leave_block();
          break;
       case TOK_PROTOTYPE:
          proto_recurse(outfile, node, s, type_table);
@@ -239,11 +236,13 @@ void type_check_body(astree* node, symbol_stack* s,
          {
             lchild->attr[attr_struct] = 1;
             st_insert(type_table,  lchild);            
+            print_sym(outfile, s, type_table, lchild);
             symbol* sym = st_lookup(type_table,  lchild);
             sym->fields = new symbol_table;
             for(auto child = node->children.begin()+1;
                child != node->children.end(); ++child){
                st_insert(sym->fields,  *child);
+               print_sym(outfile, s, type_table, (*child)->children[0]);
             }
          break;
          }
