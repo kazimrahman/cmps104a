@@ -148,7 +148,7 @@ static void dump_node (FILE* outfile, astree* node) {
       fprintf(outfile, "\n");
 }
 
-static void dump_sym (FILE* outfile, astree* node) {
+void dump_sym (FILE* outfile, astree* node) {
    auto set = node->attr;
    if(set[attr_variable] || 
       set[attr_typeid] || 
