@@ -89,7 +89,7 @@ lis : ${LISTSRC} tests
 #
 clean :
 	rm *.o *.str *.tok yylex.cc yyparse.* *.out *.err *.oc *.pdf \
-	*.ps *.output *.html *.lexyacctrace *.oh oc *.ast
+	*.ps *.output *.html *.lexyacctrace *.oh oc *.ast *.sym
 #	- rm ${OBJECTS} ${ALLGENS} ${REPORTS} ${DEPSFILE} core
 #	- rm ${foreach test, ${TESTINS:.in=}, \
 #		${patsubst %, ${test}.%, out err}}

@@ -111,10 +111,10 @@ int main (int argc, char **argv) {
    symbol_table* type_table = new symbol_table;
    s->stack.push_back(new symbol_table);
    type_check(yyparse_astree, s, type_table);
-   cout<<"Sym Table"<<endl;
-   s->dump();
-   cout<<"Type table"<<endl;
-   dump(type_table);
+//   cout<<"Sym Table"<<endl;
+//   s->dump();
+//   cout<<"Type table"<<endl;
+//   dump(type_table);
    dump_astree(astfile, symfile, yyparse_astree);
    fclose(strfile);
    fclose(tokfile);

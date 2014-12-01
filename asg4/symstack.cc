@@ -17,7 +17,6 @@ void symbol_stack::define_ident(astree* node){
 }
 
 symbol* symbol_stack::lookup_ident(astree* node){
-   printf("%d\n", stack.size());
    for(auto sym_table : stack){
       if(sym_table == nullptr || sym_table->empty())
          continue;

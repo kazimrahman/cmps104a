@@ -47,77 +47,34 @@ void block_recurse(astree* node, symbol_stack* s){
 
 void func_recurse(astree* node, symbol_stack* s){
    //put func in symtable
+   node->children[0]->children[0]->attr[attr_function] = 1;
    st_insert(s->stack[0], node->children[0]->children[0]);
    s->enter_block();
    for(auto param : node->children[1]->children){
+      param->children[0]->attr[attr_variable] = 1;
+      param->children[0]->attr[attr_lval] = 1;
       s->define_ident(param);
    }
-   //check if func is in symtable
-   //s->lookup_ident(node);
    //recursing on func node would remove it from global scope
-   for(auto child = node->children.begin()+1; child != node->children.end(); ++child)
+   for(auto child = node->children.begin()+1; 
+      child != node->children.end(); ++child)
       block_recurse(*child, s);
    s->leave_block();
    s->leave_block();
-
-
-
-//   symbol* func_sym = new_symbol(node);
-//   node->children[0]->children[0]->attr[attr_function] = 1;
-//   st_insert(s->stack[0],  node->children[0]->children[0]);
-//   adopt_attrs(node, node->children[0]);
-//   block_recurse(node, s);
-//   func_sym->parameters = new vector<symbol*>;
-//   for(auto child : node->children[1]->children){
-//      child->children[0]->attr[attr_param] = 1;
-//      s->define_ident(child->children[0]);
-//   }
-//   if(func_sym != nullptr){
-//      if(func_sym->parameters == nullptr){
-//         errprintf("Error %d %d %d: \
-//            Function name %s is identical to identifier\n",
-//            node->filenr, node->linenr, node->offset, 
-//            node->lexinfo->c_str());
-//         return;
-//      }
-//      //s->define_ident(node->children[0]->children[0]);
-//      s->leave_block();
-//   }
 }
 
 void proto_recurse(astree* node, symbol_stack* s){
+   node->children[0]->children[0]->attr[attr_function] = 1;
    st_insert(s->stack[0], node->children[0]->children[0]);
    s->enter_block();
    for(auto param : node->children[1]->children){
+      param->children[0]->attr[attr_variable] = 1;
+      param->children[0]->attr[attr_lval] = 1;
       s->define_ident(param);
       block_recurse(param, s);
    }
-   //check if func is in symtable
-   //s->lookup_ident(node);
    //put func in symtable
    s->leave_block();
-//   symbol* func_sym = new_symbol(node);
-//   node->children[0]->children[0]->attr[attr_function] = 1;
-//   //s->define_ident(node->children[0]->children[0]);
-//   st_insert(s->stack[0],  node->children[0]->children[0]);
-//   block_recurse(node, s);
-//   adopt_attrs(node, node->children[0]);
-//   func_sym->parameters = new vector<symbol*>;
-//   for(auto child : node->children[1]->children){
-//      child->children[0]->attr[attr_param] = 1;
-//      symbol* sym = s->lookup_ident(child->children[0]);
-//      func_sym->parameters->push_back(sym);
-//   }
-//   if(func_sym != nullptr){
-//      if(func_sym->parameters == nullptr){
-//         errprintf("Error %d %d %d: \
-//            Function name %s is identical to identifier\n",
-//            node->filenr, node->linenr, node->offset, 
-//            node->lexinfo->c_str());
-//         return;
-//      }
-//   }
-//   s->leave_block();
 }
 
 
@@ -138,6 +95,9 @@ void type_check_body(astree* node, symbol_stack* s,
       case TOK_PARAM:
       case TOK_RETURN:
       case '(':
+      case ')':
+      case '}':
+      case ']':
          break;
       case TOK_NEWARRAY:
          node->attr[attr_vreg] = 1;
@@ -157,7 +117,7 @@ void type_check_body(astree* node, symbol_stack* s,
                   node->children.back()->lexinfo->c_str());
                break;
             }
-            for(size_t i=0; i < attr_bitset_size; ++i){
+            for(size_t i=0; i < attr_function; ++i){
                if(sym->attr[i])
                   node->attr[i] = 1;   
             }

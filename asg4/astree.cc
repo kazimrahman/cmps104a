@@ -152,12 +152,15 @@ static void dump_sym (FILE* outfile, astree* node) {
    auto set = node->attr;
    if(set[attr_variable] || 
       set[attr_typeid] || 
-      set[attr_field]){
+      set[attr_field] || 
+      set[attr_function]){
       if(ghetto_stringset.count(const_cast<string*>(node->lexinfo)))
          return;
       ghetto_stringset.insert(const_cast<string*>(node->lexinfo));
       if(node->blocknr == 0)
          fprintf(outfile, "\n");
+      else
+         fprintf(outfile, "   ");
       fprintf(outfile, 
          "%s (%zu.%zu.%zu) {%zu} %s",
          (node->lexinfo)->c_str(), 
@@ -170,7 +173,8 @@ static void dump_sym (FILE* outfile, astree* node) {
    fprintf(outfile, "\n");
    }
 }
-static void dump_astree_rec (FILE* astfile, FILE* symfile, astree* root, int depth) {
+static void dump_astree_rec (FILE* astfile, FILE* symfile, 
+   astree* root, int depth) {
    if (root == NULL) return;
    for (int i=0; i<=depth; i++)
            fprintf(astfile, "|\t");
@@ -178,7 +182,8 @@ static void dump_astree_rec (FILE* astfile, FILE* symfile, astree* root, int dep
    dump_sym (symfile, root);
    fprintf (astfile, "\n");
    for (size_t child = 0; child < root->children.size(); ++child) {
-      dump_astree_rec (astfile, symfile, root->children[child], depth + 1);
+      dump_astree_rec (astfile, symfile, root->children[child], 
+         depth + 1);
    }
 }
 
