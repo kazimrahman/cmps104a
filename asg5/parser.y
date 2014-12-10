@@ -100,7 +100,7 @@ block    : blockhead '}'
          ;
 
 blockhead: blockhead statement   {adopt1($1, $2);}
-         | '{' statement         {$$ = $1;}
+         | '{' statement         {adopt1($1, $2);}
 
 statement: block        {$$ = $1}
          | vardecl      {$$ = $1}

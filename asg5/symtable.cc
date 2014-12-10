@@ -18,6 +18,10 @@ void st_insert(symbol_table* st,  astree* node){
    symbol_entry ent = symbol_entry(
       const_cast<string*>(node->lexinfo), sym);
    st->insert(ent);
+   //symbol_entry* s = st->find(const_cast<string*>(node->lexinfo));
+   symbol_entry s = *st->find(ent.first);
+   //cout<<"insert "<<*node->lexinfo<<" "<<s.second->filenr<< " "
+   //<<s.second->linenr<<" "<<s.second->offset<<endl;
 }
 
 symbol* st_lookup(symbol_table* st,  astree* node){
@@ -28,6 +32,8 @@ symbol* st_lookup(symbol_table* st,  astree* node){
    node->deflinenr = ent.second->linenr;
    node->deffilenr = ent.second->filenr;
    node->defoffset = ent.second->offset;
+   //cout<<"lookup "<<*node->lexinfo<<" "<<ent.second->filenr
+   //<<" "<<ent.second->linenr<<" "<<ent.second->offset<<endl;
    return ent.second;
 }
 

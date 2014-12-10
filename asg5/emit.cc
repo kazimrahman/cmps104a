@@ -84,8 +84,9 @@ void emit_if(FILE* file, astree* node){
          indent(file);
          emit_expr(file, node->children[0]);
    }
+      indent(file);
       fprintf(file,
-         "if (!%s) goto fi_%zu_%zu_%zu\n", 
+         "if (!%s) goto fi_%zu_%zu_%zu;\n", 
          node->children[0]->vreg.c_str(), 
          node->children[0]->filenr,
          node->children[0]->linenr,
@@ -94,7 +95,6 @@ void emit_if(FILE* file, astree* node){
          indent(file);
          emit_node(file, child);
       }
-      indent(file);
       fprintf(file,
          "fi_%zu_%zu_%zu:;\n",
          node->children[0]->filenr,
@@ -113,8 +113,9 @@ void emit_ifelse(FILE* file, astree* node){
          indent(file);
          emit_expr(file, node->children[0]);
    }
+      indent(file);
       fprintf(file,
-         "if (!%s) goto else_%zu_%zu_%zu\n", 
+         "if (!%s) goto else_%zu_%zu_%zu;\n", 
          node->children[0]->vreg.c_str(), 
          node->children[0]->filenr,
          node->children[0]->linenr,
@@ -123,7 +124,6 @@ void emit_ifelse(FILE* file, astree* node){
          indent(file);
          emit_node(file, child);
       }
-      indent(file);
       fprintf(file,
          "goto fi_%zu_%zu_%zu:;\n",
          node->children[0]->filenr,
@@ -146,67 +146,40 @@ void emit_ifelse(FILE* file, astree* node){
 
 }
 
-void emit_goto(astree* node){
-//   fprintf(file, 
-}
-
 void emit_expr(FILE* file, astree* node){
-   bool unary = false;
-   bool nunary = false;
-   enum{left, right};
-   symbol* tree[2];
-   if(!(node->symbol == TOK_BLOCK && *node->lexinfo == ";")){
-      printf("node: %s lex: %s\n", get_yytname(node->symbol), node->lexinfo->c_str());
-      fflush(NULL);
-      if(node->children.empty())
-         nunary = true;
-      if(!node->children.empty() && node->children[1] == nullptr){
-         unary = true;
-         tree[left] = symstack.lookup_ident(node->children[0]);
-         if(tree[left] != nullptr){
-            if(tree[left]->vreg.empty())
-               tree[left] = nullptr;
-         }
-      }
-      if(node->children.size()>1){
-         nunary = unary = false;
-         tree[left] = symstack.lookup_ident(node->children[0]);
-         tree[right] = symstack.lookup_ident(node->children[1]);
-         if(tree[left] != nullptr){
-            if(tree[left]->vreg.empty())
-               tree[left] = nullptr;
-         }
-         if(tree[right] != nullptr){
-            if(tree[right]->vreg.empty())
-               tree[right] = nullptr;
-         }
-      }
-      if(node->attr[attr_bool])
-         node->vreg = new_vreg('c');
-      else if (node->attr[attr_int])
-         node->vreg = new_vreg('i');
-      else if (node->attr[attr_struct])
-         node->vreg = new_vreg('p');
-      if(nunary){    
-         fprintf(file, "%s = %s", node->vreg.c_str(), node->lexinfo->c_str());
-      }
-      else if(unary){
-         if(tree[left] == nullptr)
-            fprintf(file, "%s = %s", node->vreg.c_str(), node->children[0]->vreg.c_str());
-         else
-            fprintf(file, "%s = %s", node->vreg.c_str(), tree[left]->vreg.c_str());
-
-      }
-      //case binary
-      else if(!unary && !nunary){
-         fprintf(file, "%s = %s %s %s", 
-            node->vreg.c_str(), 
-            node->children[0]->vreg.c_str(), 
-            node->lexinfo->c_str(), 
-            node->children[1]->vreg.c_str());
-
-      }
-   fprintf(file, "\n");
+   switch(node->symbol){
+      case TOK_IDENT:
+      case TOK_INTCON:
+      case TOK_CHARCON:
+         if(node->attr[attr_bool] || node->attr[attr_char])
+            node->vreg = new_vreg('c');
+         if(node->attr[attr_int])
+            node->vreg = new_vreg('i');
+         if(node->attr[attr_struct])
+            node->vreg = new_vreg('p');
+         fprintf(file, "%s = %s;\n", node->vreg.c_str(), node->lexinfo->c_str());
+         break;
+      case '+':
+      case '-':
+      case '/':
+      case '*':
+      case '%':
+      case TOK_EQ:
+      case TOK_NE:
+      case TOK_LT:
+      case TOK_LE:
+      case TOK_GT:
+      case TOK_GE:
+         if(node->attr[attr_bool] || node->attr[attr_char])
+            node->vreg = new_vreg('c');
+         if(node->attr[attr_int])
+            node->vreg = new_vreg('i');
+         if(node->attr[attr_struct])
+            node->vreg = new_vreg('p');
+         fprintf(file, "%s = %s;\n", node->children[0]->vreg.c_str(), node->children[1]->vreg.c_str()); 
+         break;
+         default:
+            errprintf("unkown expression: %s", node->lexinfo->c_str());
    }
 }
 
@@ -248,8 +221,8 @@ void emit_node(FILE* file, astree* node){
       case TOK_INTCON:
       case TOK_IDENT:
       case TOK_CHARCON:
-      emit_expr(file, node);
-      break; 
+         emit_expr(file, node);
+         break; 
    }
 }
 
@@ -278,20 +251,6 @@ string mangle_struct(astree* node){
       builder += ";\n";
    }
    builder += "};\n";
-   return builder;
-}
-
-string mangle_label(astree* node){
-   string builder;
-   builder += *node->lexinfo + "_";
-   builder += node->filenr + "_";
-   builder += node->linenr + "_";
-   builder += node->offset;
-   return builder;
-}
-
-string mangle_vardecl(astree* node){
-   string builder = mangle_ident(node);   
    return builder;
 }
 
@@ -336,7 +295,7 @@ void emit_func(FILE* file, astree* node){
    builder += ")\n{\n";
    fprintf(file, builder.c_str());
    for(auto func_block : node->children[2]->children){
-      emit_node(file, func_block);
+      emit_rec(file, func_block);
    }
    fprintf(file, "}\n");
    symstack.leave_block();
@@ -344,7 +303,7 @@ void emit_func(FILE* file, astree* node){
 
 void emit_oil(FILE* file, astree* root){
    //change all bool to char
-   swap_bool_char(root);
+//   swap_bool_char(root);
    //first structs
    for(auto child : root->children){
       if(child->symbol == TOK_STRUCT){
@@ -355,14 +314,14 @@ void emit_oil(FILE* file, astree* root){
    fprintf(file, "void __ocmain (void) {\n");
    //next stringcon
    for(auto node : stringcon_list){
-      fprintf(file, "        ");
+      indent(file);
       emit_stringcon(file, node);
    }
    //global vars
    for(auto child : root->children){
       if(child->symbol == TOK_VARDECL){
          fprintf(file, "        ");
-         fprintf(file, mangle_vardecl(child->children[0]).c_str());
+         fprintf(file, mangle_ident(child->children[0]).c_str());
       }
    }
    fprintf(file, "}\n");
