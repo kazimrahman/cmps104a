@@ -16,6 +16,7 @@ struct symbol{
    size_t blocknr;
    vector<symbol*>* parameters;
    size_t deffilenr, deflinenr, defoffset;
+   string vreg;
 };
 
 symbol* new_symbol(astree* node);

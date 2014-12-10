@@ -9,6 +9,7 @@ symbol* new_symbol(astree* node){
    sym->blocknr = node->blocknr;
    sym->attr = node->attr;
    sym->parameters = nullptr;
+   sym->vreg = node->vreg;
    return sym;
 }
 

@@ -27,6 +27,17 @@ symbol* symbol_stack::lookup_ident(astree* node){
    return nullptr;
 }
 
+//astree* symbol_stack::lookup_ident_astree(astree* node){
+//   for(auto sym_table : stack){
+//      if(sym_table == nullptr || sym_table->empty())
+//         continue;
+//      astree* node = st_lookup_node(sym_table, node);
+//      if(node != nullptr)
+//         return node;
+//   }
+//   return nullptr;
+//}
+
 void symbol_stack::dump(){
    int i = 0;
    for(auto sym_table : stack){

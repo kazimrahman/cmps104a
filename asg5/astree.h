@@ -30,6 +30,7 @@ struct astree {
    attr_bitset attr;
    symbol_table* struct_table;
    size_t deffilenr, deflinenr, defoffset;
+   string vreg;
 };
 
 extern vector<astree*> stringcon_list;

@@ -13,6 +13,7 @@ class symbol_stack{
 
       void define_ident(astree* node);
       symbol* lookup_ident(astree* node);
+      //astree* lookup_ident_astree(astree* node);
       void dump();
 };
 #endif
