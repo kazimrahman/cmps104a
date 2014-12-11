@@ -147,6 +147,7 @@ void emit_ifelse(FILE* file, astree* node){
 }
 
 void emit_expr(FILE* file, astree* node){
+   indent(file);
    switch(node->symbol){
       case TOK_IDENT:
       case TOK_INTCON:
@@ -157,7 +158,8 @@ void emit_expr(FILE* file, astree* node){
             node->vreg = new_vreg('i');
          if(node->attr[attr_struct])
             node->vreg = new_vreg('p');
-         fprintf(file, "%s = %s;\n", node->vreg.c_str(), node->lexinfo->c_str());
+         fprintf(file, "%s = %s;\n", 
+            node->vreg.c_str(), node->lexinfo->c_str());
          break;
       case '+':
       case '-':
@@ -176,7 +178,14 @@ void emit_expr(FILE* file, astree* node){
             node->vreg = new_vreg('i');
          if(node->attr[attr_struct])
             node->vreg = new_vreg('p');
-         fprintf(file, "%s = %s;\n", node->children[0]->vreg.c_str(), node->children[1]->vreg.c_str()); 
+         //for 90-c8q.oc
+         if(node->children.empty() || 
+               node->children[0] == nullptr || 
+               node->children[1] == nullptr)
+            break;
+         fprintf(file, "%s = %s;\n", 
+            node->children[0]->vreg.c_str(), 
+            node->children[1]->vreg.c_str()); 
          break;
          default:
             errprintf("unkown expression: %s", node->lexinfo->c_str());
@@ -234,14 +243,16 @@ void swap_bool_char(astree* root){
 }
 
 void emit_stringcon(FILE* file, astree* node){
-   fprintf(file, "char* %s = %s;\n", new_vreg('s').c_str(), node->lexinfo->c_str());
+   fprintf(file, "char* %s = %s;\n", 
+      new_vreg('s').c_str(), node->lexinfo->c_str());
 }
 
 string mangle_struct(astree* node){
    //node is structdecl
    string builder;
    builder += "struct s_" + *node->children[0]->lexinfo + "{" + "\n";
-   for(auto field = node->children.cbegin()+1; field != node->children.cend(); field++){
+   for(auto field = node->children.cbegin()+1; 
+         field != node->children.cend(); field++){
       builder += "        ";
       builder += *(*field)->lexinfo;
       builder += " _f";
@@ -312,6 +323,7 @@ void emit_oil(FILE* file, astree* root){
    }
    //ocmain
    fprintf(file, "void __ocmain (void) {\n");
+   emit_rec(file, root);
    //next stringcon
    for(auto node : stringcon_list){
       indent(file);

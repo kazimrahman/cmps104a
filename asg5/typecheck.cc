@@ -134,7 +134,6 @@ void type_check_body(FILE* outfile, astree* node, symbol_stack* s,
       rchild = node->children[1];
    switch(node->symbol){
       case TOK_ROOT:
-      case TOK_DECLID:
       case TOK_PARAM:
       case TOK_RETURN:
       case '(':
@@ -143,6 +142,9 @@ void type_check_body(FILE* outfile, astree* node, symbol_stack* s,
       case ']':
       case ';':
       case TOK_RETURNVOID:
+         break;
+      case TOK_DECLID:
+         s->define_ident(node);
          break;
       case TOK_FIELD:
          node->attr[attr_field] = 1;
@@ -251,10 +253,10 @@ void type_check_body(FILE* outfile, astree* node, symbol_stack* s,
          lchild->children[0]->attr[attr_lval] = 1;
          lchild->children[0]->attr[attr_variable] = 1;
          adopt_attrs(node, lchild);
-         if(s->lookup_ident(lchild->children[0]))
-            errprintf("Error %d %d %d: Duplicate declaration %s\n",
-               node->filenr, node->linenr, node->offset, 
-               lchild->children[0]->lexinfo->c_str());
+//         if(s->lookup_ident(lchild->children[0]))
+//            errprintf("Error %d %d %d: Duplicate declaration %s\n",
+//               node->filenr, node->linenr, node->offset, 
+//               lchild->children[0]->lexinfo->c_str());
          s->define_ident(lchild->children[0]);
          print_sym(outfile, s, type_table, lchild->children[0]);
          break;

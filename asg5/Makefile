@@ -114,7 +114,7 @@ ${DEPSFILE} :
 #
 #
 submit :
-	submit cmps104a-wm.f14 asg4 *
+	submit cmps104a-wm.f14 asg5 *
 
 tests : ${EXECBIN}
 	touch ${TESTINS}

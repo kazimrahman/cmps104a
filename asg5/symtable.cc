@@ -19,7 +19,7 @@ void st_insert(symbol_table* st,  astree* node){
       const_cast<string*>(node->lexinfo), sym);
    st->insert(ent);
    //symbol_entry* s = st->find(const_cast<string*>(node->lexinfo));
-   symbol_entry s = *st->find(ent.first);
+   //symbol_entry s = *st->find(ent.first);
    //cout<<"insert "<<*node->lexinfo<<" "<<s.second->filenr<< " "
    //<<s.second->linenr<<" "<<s.second->offset<<endl;
 }
