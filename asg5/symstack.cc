@@ -2,12 +2,12 @@
 #include <iostream>
 
 void symbol_stack::enter_block(){
-   ++next_block;
-   stack.push_back(nullptr);
+   //++next_block;
+   //stack.push_back(nullptr);
 }
 
 void symbol_stack::leave_block(){
-   stack.pop_back();
+   //stack.pop_back();
 }
 
 void symbol_stack::define_ident(astree* node){
